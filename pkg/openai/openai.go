@@ -37,16 +37,12 @@ func (o *openAI) ResponseGPT(text string) (string, error) {
 	request := openai.ChatCompletionRequest{
 		Model: o.model,
 		Messages: []openai.ChatCompletionMessage{
-			//{
-			//	Role:    openai.ChatMessageRoleSystem,
-			//	Content: s.prompt,
-			//},
 			{
 				Role:    openai.ChatMessageRoleUser,
 				Content: text,
 			},
 		},
-		MaxTokens:   1024,
+		MaxTokens:   800,
 		Temperature: 1,
 		TopP:        1,
 	}
