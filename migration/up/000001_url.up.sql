@@ -13,7 +13,7 @@ create table resident(
     work_activity varchar(50) null,
     company_name varchar(50) null,
     advantage varchar(100) null,
-    hobie varchar(150) null,
+--     hobie varchar(150) null,
     photo_file_id varchar(150) null,
     primary key (id)
 );
