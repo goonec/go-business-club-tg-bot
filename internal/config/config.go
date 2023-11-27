@@ -10,7 +10,7 @@ type (
 	Config struct {
 		Postgres Postgres `json:"postgres"`
 		Telegram Telegram `json:"telegram"`
-		ChatGPT  ChatGPT  `json:"chat_gpt"`
+		OpenAI   OpenAI   `json:"open_ai"`
 	}
 
 	Postgres struct {
@@ -21,7 +21,7 @@ type (
 		Token string `json:"token"`
 	}
 
-	ChatGPT struct {
+	OpenAI struct {
 		Token string `json:"token"`
 	}
 )
@@ -39,7 +39,7 @@ func New() (*Config, error) {
 		Telegram: Telegram{
 			Token: os.Getenv("TOKEN_TG"),
 		},
-		ChatGPT: ChatGPT{
+		OpenAI: OpenAI{
 			Token: os.Getenv("TOKEN_CHAT_GPT"),
 		},
 	}
