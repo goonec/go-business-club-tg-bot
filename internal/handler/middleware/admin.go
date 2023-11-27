@@ -3,12 +3,12 @@ package middleware
 import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+
+	"github.com/goonec/business-tg-bot/pkg/tgbot"
 )
 
-type ViewFunc func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error
-
-func AdminMiddleware(channelID int64, next ViewFunc) ViewFunc {
-	return func(ctx context.Context, bot *tgbotapi.BotAPI, update tgbotapi.Update) error {
+func AdminMiddleware(channelID int64, next tgbot.ViewFunc) tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 		admins, err := bot.GetChatAdministrators(
 			tgbotapi.ChatAdministratorsConfig{
 				ChatConfig: tgbotapi.ChatConfig{
@@ -26,15 +26,11 @@ func AdminMiddleware(channelID int64, next ViewFunc) ViewFunc {
 			}
 		}
 
-		if _, err := bot.Send(tgbotapi.NewMessage(
-			update.FromChat().ID,
-			"У вас нет прав на выполнение этой команды.",
-		)); err != nil {
+		if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID,
+			"У вас нет прав на выполнение этой команды.")); err != nil {
 			return err
 		}
 
 		return nil
-
 	}
-
 }

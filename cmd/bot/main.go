@@ -15,6 +15,6 @@ func main() {
 	}
 
 	if err := bot.Run(log, cfg); err != nil {
-		log.Fatal("failed to run bot: %v", err)
+		log.Fatal("failed to run tgbot: %v", err)
 	}
 }

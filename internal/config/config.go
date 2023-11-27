@@ -27,7 +27,7 @@ type (
 )
 
 func New() (*Config, error) {
-	err := godotenv.Load("configs/bot.env")
+	err := godotenv.Load("configs/tgbot.env")
 	if err != nil {
 		return nil, err
 	}

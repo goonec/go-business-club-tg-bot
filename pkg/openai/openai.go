@@ -9,18 +9,17 @@ import (
 	"time"
 )
 
-type openAI struct {
+type OpenAI struct {
 	client *openai.Client
 	prompt string
 	model  string
 	mu     sync.Mutex
 }
 
-func NewOpenAIConnect(apiKey string, prompt string) *openAI {
-	ai := &openAI{
+func NewOpenAIConnect(apiKey string) *OpenAI {
+	ai := &OpenAI{
 		client: openai.NewClient(apiKey),
 		model:  openai.GPT3Dot5Turbo,
-		prompt: prompt,
 	}
 
 	if apiKey == "" {
@@ -30,7 +29,7 @@ func NewOpenAIConnect(apiKey string, prompt string) *openAI {
 	return ai
 }
 
-func (o *openAI) ResponseGPT(text string) (string, error) {
+func (o *OpenAI) ResponseGPT(text string) (string, error) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 
