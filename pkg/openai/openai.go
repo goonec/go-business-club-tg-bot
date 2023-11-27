@@ -3,8 +3,8 @@ package openai
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/sashabaranov/go-openai"
+	"log"
 	"sync"
 	"time"
 )
@@ -24,7 +24,7 @@ func NewOpenAIConnect(apiKey string, prompt string) *openAI {
 	}
 
 	if apiKey == "" {
-		fmt.Println("api key is empty")
+		log.Println("[WARNING] api key is empty")
 	}
 
 	return ai
@@ -47,7 +47,7 @@ func (o *openAI) ResponseGPT(text string) (string, error) {
 		TopP:        1,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
 	resp, err := o.client.CreateChatCompletion(ctx, request)
@@ -55,7 +55,6 @@ func (o *openAI) ResponseGPT(text string) (string, error) {
 		return "", err
 	}
 
-	fmt.Println(resp)
 	if len(resp.Choices) == 0 {
 		return "", errors.New("no choices in openai response")
 	}
