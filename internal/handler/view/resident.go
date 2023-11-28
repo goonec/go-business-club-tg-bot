@@ -31,3 +31,9 @@ func (v *viewResident) ViewStart() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+//func (v *viewResident) ViewShowAllResident() tgbot.ViewFunc {
+//	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+//
+//	}
+//}

@@ -30,6 +30,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot := tgbot.NewBot(bot, log, openaiRequest)
 	newBot.RegisterCommandView("start", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewStart()))
 	//newBot.RegisterCommandView("notify", middleware.AdminMiddleware(cfg.Chat.ChatID))
+	//newBot.RegisterCommandView("resident_list")
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()

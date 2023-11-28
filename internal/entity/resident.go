@@ -1,27 +1,35 @@
 package entity
 
+// v1
+//type Resident struct {
+//	ID           int    `json:"id"`
+//	Age          int8   `json:"age"`
+//	UsernameTG   string `json:"tg_username"`
+//	PhoneNumber  string `json:"phone_number"`
+//	Firstname    string `json:"firstname"`
+//	Lastname     string `json:"lastname"`
+//	Patronymic   string `json:"patronymic"`
+//	Region       string `json:"region"`
+//	WorkActivity string `json:"work_activity"`
+//	CompanyName  string `json:"company_name"`
+//	Advantage    string `json:"advantage"`
+//	Hobie        string `json:"hobie"`
+//	PhotoFileID  string `json:"photo_file_id"`
+//}
+
+// Resident v2
 type Resident struct {
-	ID           int64  `json:"id"`
-	Age          int8   `json:"age"`
-	Firstname    string `json:"firstname"`
-	Lastname     string `json:"lastname"`
-	Patronymic   string `json:"patronymic"`
-	Region       string `json:"region"`
-	WorkActivity string `json:"work_activity"`
-	CompanyName  string `json:"company_name"`
-	Advantage    string `json:"advantage"`
+	ID           int    `json:"id"`
+	UsernameTG   string `json:"tg_username"`
+	ResidentData string `json:"resident_data"`
 	PhotoFileID  string `json:"photo_file_id"`
 
-	ResidentHobie []ResidentHobie `json:"resident_hobie"`
-	ResidentRole  ResidentRole    `json:"resident_role"`
+	FIO FIO `json:"fio"`
 }
 
-type ResidentHobie struct {
-	ID    int    `json:"id"`
-	Hobie string `json:"hobie"`
-}
-
-type ResidentRole struct {
-	ID   int    `json:"id"`
-	Role string `json:"role"`
+type FIO struct {
+	ID         int    `json:"id"`
+	Firstname  string `json:"firstname"`
+	Lastname   string `json:"lastname"`
+	Patronymic string `json:"patronymic"`
 }
