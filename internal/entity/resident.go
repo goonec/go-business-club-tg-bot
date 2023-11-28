@@ -1,5 +1,10 @@
 package entity
 
+import (
+	"strconv"
+	"strings"
+)
+
 // v1
 //type Resident struct {
 //	ID           int    `json:"id"`
@@ -32,4 +37,18 @@ type FIO struct {
 	Firstname  string `json:"firstname"`
 	Lastname   string `json:"lastname"`
 	Patronymic string `json:"patronymic"`
+}
+
+func FindID(data string) int {
+	parts := strings.Split(data, "_")
+	if len(parts) > 2 {
+		return 0
+	}
+
+	id, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return 0
+	}
+
+	return id
 }

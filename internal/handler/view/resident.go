@@ -45,14 +45,6 @@ func (v *viewResident) ViewShowAllResident() tgbot.ViewFunc {
 		msg := tgbotapi.NewMessage(update.FromChat().ID, "<b>Список резидентов</b>")
 		msg.ParseMode = tgbotapi.ModeHTML
 
-		//msg := tgbotapi.EditMessageTextConfig{
-		//	ParseMode: tgbotapi.ModeHTML,
-		//	BaseEdit: tgbotapi.BaseEdit{
-		//		ChatID:    update.Message.Chat.ID,
-		//		MessageID: update.Message.MessageID,
-		//	},
-		//}
-
 		msg.ReplyMarkup = fioMarkup
 
 		if _, err := bot.Send(msg); err != nil {
@@ -62,3 +54,9 @@ func (v *viewResident) ViewShowAllResident() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+//func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
+//	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+//
+//	}
+//}

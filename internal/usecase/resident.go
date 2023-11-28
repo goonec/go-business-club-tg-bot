@@ -62,7 +62,6 @@ func (r *residentUsecase) createFIOResidentMarkup(fio []entity.FIO) (*tgbotapi.I
 	}
 
 	rows = append(rows, row)
-	//rows = append(rows, []tgbotapi.InlineKeyboardButton{view.CreateCellButtonData, view.DeleteCellButtonData})
 
 	markup := tgbotapi.NewInlineKeyboardMarkup(rows...)
 

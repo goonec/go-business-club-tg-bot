@@ -4,6 +4,7 @@ import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goonec/business-tg-bot/internal/config"
+	"github.com/goonec/business-tg-bot/internal/handler/callback"
 	"github.com/goonec/business-tg-bot/internal/handler/middleware"
 	"github.com/goonec/business-tg-bot/internal/handler/view"
 	"github.com/goonec/business-tg-bot/internal/repo"
@@ -37,10 +38,15 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	residentUsecase := usecase.NewResidentUsecase(residentRepo)
 	residentView := view.NewViewResident(residentUsecase, log)
 
+	residentCallback := callback.NewCallbackResident(residentUsecase, log)
+
 	newBot := tgbot.NewBot(bot, log, openaiRequest)
 	newBot.RegisterCommandView("start", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewStart()))
-	//newBot.RegisterCommandView("notify", middleware.AdminMiddleware(cfg.Chat.ChatID))
+	//newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID))
+
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
+
+	newBot.RegisterCommandCallback("fio", residentCallback.CallbackGetResident())
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()

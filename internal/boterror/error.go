@@ -6,7 +6,8 @@ import (
 )
 
 var (
-	ErrNotFound = NewError("Resident not found", errors.New("not_found"))
+	ErrNotFound              = NewError("Resident not found", errors.New("not_found"))
+	ErrIncorrectCallbackData = NewError("Incorrect Callback Data", errors.New("incorrect_callback"))
 )
 
 type BotError struct {
@@ -29,6 +30,8 @@ func ParseErrToText(err error) string {
 	switch {
 	case errors.Is(err, ErrNotFound):
 		return "Резидент не был найден"
+	case errors.Is(err, ErrIncorrectCallbackData):
+
 	}
 
 	return "Произошла внутренняя ошибка на сервере"
