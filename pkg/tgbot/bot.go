@@ -43,6 +43,8 @@ func (b *Bot) Run(ctx context.Context) error {
 		select {
 		case update := <-updates:
 			updateCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			b.log.Info("[%s] %s", update.Message.From.UserName, update.Message.Text)
+
 			b.handlerUpdate(updateCtx, &update)
 			cancel()
 		case <-ctx.Done():
@@ -71,6 +73,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			if err != nil {
 				b.log.Error("failed to send message from ChatGPT %v", err)
 			}
+			return
 		}
 
 		cmd := update.Message.Command()
@@ -89,6 +92,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			if _, err := b.api.Send(msg); err != nil {
 				b.log.Error("failed to send message: %v", err)
 			}
+			return
 		}
 	} else if update.CallbackQuery != nil {
 
