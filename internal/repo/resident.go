@@ -2,6 +2,8 @@ package repo
 
 import (
 	"context"
+	"database/sql"
+	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/pkg/postgres"
 )
@@ -50,7 +52,7 @@ func (r *residentRepository) GetAll(ctx context.Context) ([]entity.Resident, err
 }
 
 func (r *residentRepository) GetAllFIO(ctx context.Context) ([]entity.FIO, error) {
-	query := `select id, firstname,lastname,patronymic from resident`
+	query := `select id, firstname,substring(lastname,1,1),substring(patronymic,1,1) from resident`
 
 	rows, err := r.Pool.Query(ctx, query)
 	if err != nil {
@@ -108,6 +110,9 @@ func (r *residentRepository) GetByID(ctx context.Context, id int) (*entity.Resid
 		&resident.PhotoFileID)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, boterror.ErrNotFound
+		}
 		return nil, err
 	}
 
