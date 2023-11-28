@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 	"github.com/goonec/business-tg-bot/pkg/tgbot"
@@ -17,7 +16,6 @@ func AdminMiddleware(channelID int64, next tgbot.ViewFunc) tgbot.ViewFunc {
 				},
 			})
 
-		fmt.Println(err)
 		if err != nil {
 			return err
 		}

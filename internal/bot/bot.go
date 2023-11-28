@@ -6,8 +6,11 @@ import (
 	"github.com/goonec/business-tg-bot/internal/config"
 	"github.com/goonec/business-tg-bot/internal/handler/middleware"
 	"github.com/goonec/business-tg-bot/internal/handler/view"
+	"github.com/goonec/business-tg-bot/internal/repo"
+	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/openai"
+	"github.com/goonec/business-tg-bot/pkg/postgres"
 	"github.com/goonec/business-tg-bot/pkg/tgbot"
 	"os"
 	"os/signal"
@@ -20,17 +23,24 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 		log.Fatal("failed to load token %v", err)
 	}
 
-	bot.Debug = false
+	psql, err := postgres.New(context.Background(), 5, cfg.Postgres.URL)
+	if err != nil {
+		log.Fatal("failed to connect PostgreSQL: %v", err)
+	}
+	defer psql.Close()
 
 	log.Info("Authorized on account %s", bot.Self.UserName)
 
 	openaiRequest := openai.NewOpenAIConnect(cfg.OpenAI.Token)
-	residentView := view.NewViewResident(nil, log)
+
+	residentRepo := repo.NewResidentRepository(psql)
+	residentUsecase := usecase.NewResidentUsecase(residentRepo)
+	residentView := view.NewViewResident(residentUsecase, log)
 
 	newBot := tgbot.NewBot(bot, log, openaiRequest)
 	newBot.RegisterCommandView("start", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewStart()))
 	//newBot.RegisterCommandView("notify", middleware.AdminMiddleware(cfg.Chat.ChatID))
-	//newBot.RegisterCommandView("resident_list")
+	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()

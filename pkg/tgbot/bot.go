@@ -33,6 +33,11 @@ func (b *Bot) RegisterCommandView(cmd string, view ViewFunc) {
 
 	b.cmdView[cmd] = view
 }
+
+func (b *Bot) RegisterCommandCallback(callback string) {
+
+}
+
 func (b *Bot) Run(ctx context.Context) error {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -43,8 +48,6 @@ func (b *Bot) Run(ctx context.Context) error {
 		select {
 		case update := <-updates:
 			updateCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-			b.log.Info("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
 			b.handlerUpdate(updateCtx, &update)
 			cancel()
 		case <-ctx.Done():
@@ -61,6 +64,8 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 	}()
 
 	if update.Message != nil {
+		b.log.Info("[%s] %s", update.Message.From.UserName, update.Message.Text)
+
 		var view ViewFunc
 
 		if !update.Message.IsCommand() {
@@ -95,6 +100,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			return
 		}
 	} else if update.CallbackQuery != nil {
+		b.log.Info("[%s] %s", update.CallbackQuery.From.UserName, update.CallbackData())
 
 	}
 

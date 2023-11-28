@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 	"errors"
+	"fmt"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/internal/repo"
@@ -18,13 +20,13 @@ func NewResidentUsecase(residentRepo repo.Resident) Resident {
 	}
 }
 
-func (r *residentUsecase) GetAllFIOResident(ctx context.Context) ([]entity.FIO, error) {
+func (r *residentUsecase) GetAllFIOResident(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error) {
 	fio, err := r.residentRepo.GetAllFIO(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return fio, nil
+	return r.createFIOResidentMarkup(fio)
 }
 
 func (r *residentUsecase) GetResident(ctx context.Context, id int) (*entity.Resident, error) {
@@ -46,4 +48,23 @@ func (r *residentUsecase) CreateResident(ctx context.Context, resident *entity.R
 	}
 
 	return nil
+}
+
+func (r *residentUsecase) createFIOResidentMarkup(fio []entity.FIO) (*tgbotapi.InlineKeyboardMarkup, error) {
+	var rows [][]tgbotapi.InlineKeyboardButton
+	var row []tgbotapi.InlineKeyboardButton
+
+	for _, el := range fio {
+		button := tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%s %s.%s.", el.Firstname, el.Lastname, el.Patronymic), fmt.Sprintf("fio_%d", el.ID))
+		row = append(row, button)
+		rows = append(rows, row)
+		row = []tgbotapi.InlineKeyboardButton{}
+	}
+
+	rows = append(rows, row)
+	//rows = append(rows, []tgbotapi.InlineKeyboardButton{view.CreateCellButtonData, view.DeleteCellButtonData})
+
+	markup := tgbotapi.NewInlineKeyboardMarkup(rows...)
+
+	return &markup, nil
 }

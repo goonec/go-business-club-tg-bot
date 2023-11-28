@@ -19,4 +19,18 @@ create table if not exists resident(
     references "user" (tg_username)
 );
 
+-- Insert test data into "user" table
+INSERT INTO "user" (id, tg_username, create_at, role)
+VALUES
+    (1, 'john_doe', '2023-01-01', 'admin'),
+    (2, 'jane_smith', '2023-01-02', 'user'),
+    (3, 'bob_jones', '2023-01-03', 'user');
+
+-- Insert test data into "resident" table
+INSERT INTO resident (tg_username, firstname, lastname, patronymic, resident_data, photo_file_id)
+VALUES
+    ('john_doe', 'John', 'Doe', 'Pat', 'Some resident data for John', 'photo1.jpg'),
+    ('jane_smith', 'Jane', 'Smith', 'Lee', 'Some resident data for Jane', 'photo2.jpg'),
+    ('bob_jones', 'Bob', 'Jones', 'Kane', 'Some resident data for Bob', NULL);
+
 

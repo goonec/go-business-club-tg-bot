@@ -31,5 +31,5 @@ func ParseErrToText(err error) string {
 		return "Резидент не был найден"
 	}
 
-	return "Произошла внутренняя ошибка в боте"
+	return "Произошла внутренняя ошибка на сервере"
 }
