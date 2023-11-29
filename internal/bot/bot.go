@@ -34,15 +34,17 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	openaiRequest := openai.NewOpenAIConnect(cfg.OpenAI.Token)
 
+	transportCh := make(chan []string)
+
 	residentRepo := repo.NewResidentRepository(psql)
 	residentUsecase := usecase.NewResidentUsecase(residentRepo)
-	residentView := view.NewViewResident(residentUsecase, log)
+	residentView := view.NewViewResident(residentUsecase, log, transportCh)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log)
 
-	newBot := tgbot.NewBot(bot, log, openaiRequest)
+	newBot := tgbot.NewBot(bot, log, openaiRequest, transportCh)
 	newBot.RegisterCommandView("start", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewStart()))
-	//newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID))
+	newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResident()))
 
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
 

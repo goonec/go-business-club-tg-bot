@@ -19,19 +19,32 @@ type Bot struct {
 	openAI       *openai.OpenAI
 	cmdView      map[string]ViewFunc
 	callbackView map[string]ViewFunc
+
+	stateStore  map[int64]Store
+	transportCh chan []string
 }
 
-func NewBot(api *tgbotapi.BotAPI, log *logger.Logger, openAI *openai.OpenAI) *Bot {
+type Store struct {
+	waiting bool
+	store   []string
+}
+
+func NewBot(api *tgbotapi.BotAPI, log *logger.Logger, openAI *openai.OpenAI, transportCh chan []string) *Bot {
 	return &Bot{
-		api:    api,
-		openAI: openAI,
-		log:    log,
+		api:         api,
+		openAI:      openAI,
+		log:         log,
+		transportCh: transportCh,
 	}
 }
 
 func (b *Bot) RegisterCommandView(cmd string, view ViewFunc) {
 	if b.cmdView == nil {
 		b.cmdView = make(map[string]ViewFunc)
+	}
+
+	if b.stateStore == nil {
+		b.stateStore = make(map[int64]Store)
 	}
 
 	b.cmdView[cmd] = view
@@ -70,23 +83,32 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 		}
 	}()
 
+	// Если пришло сообщение
 	if update.Message != nil {
 		b.log.Info("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-		var view ViewFunc
-
-		if !update.Message.IsCommand() {
-			openaiResponse, err := b.openAI.ResponseGPT(update.Message.Text)
-			if err != nil {
-				b.log.Error("failed to get response from GPT: %v", err)
-			}
-
-			_, err = b.api.Send(tgbotapi.NewMessage(update.Message.Chat.ID, openaiResponse))
-			if err != nil {
-				b.log.Error("failed to send message from ChatGPT %v", err)
-			}
+		nextStep := b.messageWithState(update)
+		if !nextStep {
 			return
 		}
+
+		// Провекрка на отсутствие команды и ожидания для запросов к openai, работает по аналагу default
+		if _, ok := b.stateStore[update.Message.Chat.ID]; !ok {
+			if !update.Message.IsCommand() {
+				openaiResponse, err := b.openAI.ResponseGPT(update.Message.Text)
+				if err != nil {
+					b.log.Error("failed to get response from GPT: %v", err)
+				}
+
+				_, err = b.api.Send(tgbotapi.NewMessage(update.Message.Chat.ID, openaiResponse))
+				if err != nil {
+					b.log.Error("failed to send message from ChatGPT %v", err)
+				}
+				return
+			}
+		}
+
+		var view ViewFunc
 
 		cmd := update.Message.Command()
 
@@ -106,6 +128,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			}
 			return
 		}
+		// Если нажали на кнопку
 	} else if update.CallbackQuery != nil {
 		b.log.Info("[%s] %s", update.CallbackQuery.From.UserName, update.CallbackData())
 
@@ -129,9 +152,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			}
 			return
 		}
-
 	}
-
 }
 
 func (b *Bot) callbackHasString(callbackData string) (error, ViewFunc) {
@@ -145,4 +166,62 @@ func (b *Bot) callbackHasString(callbackData string) (error, ViewFunc) {
 	}
 
 	return nil, nil
+}
+
+func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
+	userID := update.Message.Chat.ID
+	text := update.Message.Text
+
+	if text == "/create_resident" {
+		store, ok := b.stateStore[userID]
+		if !ok {
+			b.stateStore[userID] = Store{}
+		}
+		store.waiting = true
+
+		return true
+	}
+
+	s, ok := b.stateStore[userID]
+	if ok {
+		switch {
+		case len(s.store) == 0:
+			s.store = append(s.store, text)
+
+			msg := tgbotapi.NewMessage(userID, "Введите резюме резидента.")
+			if _, err := b.api.Send(msg); err != nil {
+				b.log.Error("failed to send message: %v", err)
+			}
+
+			b.stateStore[userID] = s
+
+			return false
+		case len(s.store) == 1:
+			s.store = append(s.store, text)
+
+			msg := tgbotapi.NewMessage(userID, "Загрузите фотографию, связанную с резидентом.")
+			if _, err := b.api.Send(msg); err != nil {
+				b.log.Error("failed to send message: %v", err)
+			}
+			b.stateStore[userID] = s
+
+			return false
+		case len(s.store) == 2:
+			photo := update.Message.Photo
+			if len(photo) > 0 {
+				largestPhoto := photo[len(photo)-1]
+
+				fileID := largestPhoto.FileID
+				s.store = append(s.store, fileID)
+			}
+			s.waiting = false
+
+			b.stateStore[userID] = s
+			b.transportCh <- b.stateStore[userID].store
+
+			delete(b.stateStore, userID)
+			return false
+		}
+	}
+	return true
 }

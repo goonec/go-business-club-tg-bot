@@ -19,6 +19,8 @@ create table if not exists resident(
     primary key (id)
 );
 
+create table if not exists
+
 -- Insert test data into "user" table
 INSERT INTO "user" (id, tg_username, create_at, role)
 VALUES
