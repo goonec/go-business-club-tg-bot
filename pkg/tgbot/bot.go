@@ -21,24 +21,35 @@ type Bot struct {
 	cmdView      map[string]ViewFunc
 	callbackView map[string]ViewFunc
 
-	stateStore  map[int64][]string
+	stateStore  map[int64]map[string][]string
 	transportCh chan map[int64][]string
 
 	mu sync.RWMutex
 }
 
 // set потокобезопасная запись структуры пользователя в map
-func (b *Bot) set(data string, userID int64) {
+func (b *Bot) set(data string, command string, userID int64) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
-	b.stateStore[userID] = append(b.stateStore[userID], data)
+	b.stateStore[userID][command] = append(b.stateStore[userID][command], data)
 }
 
 // read потокобезопасные поиск пользователя в map
-func (b *Bot) read(userID int64) ([]string, bool) {
+func (b *Bot) read(userID int64) (map[string][]string, bool) {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 	data, ok := b.stateStore[userID]
+	if !ok {
+		return map[string][]string{}, false
+	}
+
+	return data, true
+}
+
+func (b *Bot) readCommand(userID int64, command string) ([]string, bool) {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	data, ok := b.stateStore[userID][command]
 	if !ok {
 		return []string{}, false
 	}
@@ -51,6 +62,19 @@ func (b *Bot) delete(userID int64) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	delete(b.stateStore, userID)
+}
+
+func (b *Bot) rangeCommandMap(f func(key, value any) bool, userID int64) bool {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+
+	for key, user := range b.stateStore[userID] {
+		if !f(key, user) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func NewBot(api *tgbotapi.BotAPI, log *logger.Logger, openAI *openai.OpenAI, transportCh chan map[int64][]string) *Bot {
@@ -68,7 +92,7 @@ func (b *Bot) RegisterCommandView(cmd string, view ViewFunc) {
 	}
 
 	if b.stateStore == nil {
-		b.stateStore = make(map[int64][]string)
+		b.stateStore = make(map[int64]map[string][]string)
 	}
 
 	b.cmdView[cmd] = view
@@ -205,45 +229,52 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 	if text == "/create_resident" {
 		_, ok := b.read(userID)
 		if !ok {
-			b.stateStore[userID] = []string{}
+			b.stateStore[userID] = make(map[string][]string)
+			b.stateStore[userID]["/create_resident"] = []string{}
 		}
 		return true
 	}
 
 	s, ok := b.read(userID)
 	if ok {
-		switch {
-		case len(s) == 0:
-			b.set(text, userID)
+		for key, value := range s {
+			switch key {
+			case "/create_resident":
+				switch {
+				case len(value) == 0:
+					b.set(text, key, userID)
 
-			msg := tgbotapi.NewMessage(userID, "[2] Введите резюме резидента.")
-			if _, err := b.api.Send(msg); err != nil {
-				b.log.Error("failed to send message: %v", err)
+					msg := tgbotapi.NewMessage(userID, "[2] Введите резюме резидента.")
+					if _, err := b.api.Send(msg); err != nil {
+						b.log.Error("failed to send message: %v", err)
+					}
+					return false
+				case len(value) == 1:
+					b.set(text, key, userID)
+
+					msg := tgbotapi.NewMessage(userID, "[3] Загрузите фотографию, связанную с резидентом.")
+					if _, err := b.api.Send(msg); err != nil {
+						b.log.Error("failed to send message: %v", err)
+					}
+					return false
+				case len(value) == 2:
+					photo := update.Message.Photo
+					if len(photo) > 0 {
+						largestPhoto := photo[len(photo)-1]
+
+						fileID := largestPhoto.FileID
+						b.set(fileID, key, userID)
+					}
+
+					d, _ := b.readCommand(userID, key)
+					b.transportCh <- map[int64][]string{userID: d}
+
+					b.delete(userID)
+					return false
+				}
 			}
-			return false
-		case len(s) == 1:
-			b.set(text, userID)
-
-			msg := tgbotapi.NewMessage(userID, "[3] Загрузите фотографию, связанную с резидентом.")
-			if _, err := b.api.Send(msg); err != nil {
-				b.log.Error("failed to send message: %v", err)
-			}
-			return false
-		case len(s) == 2:
-			photo := update.Message.Photo
-			if len(photo) > 0 {
-				largestPhoto := photo[len(photo)-1]
-
-				fileID := largestPhoto.FileID
-				b.set(fileID, userID)
-			}
-
-			d, _ := b.read(userID)
-			b.transportCh <- map[int64][]string{userID: d}
-
-			b.delete(userID)
-			return false
 		}
+		return false
 	}
 	return true
 }
