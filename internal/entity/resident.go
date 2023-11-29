@@ -1,28 +1,10 @@
 package entity
 
 import (
-	"github.com/goonec/business-tg-bot/internal/boterror"
 	"regexp"
 	"strconv"
 	"strings"
 )
-
-// v1
-//type Resident struct {
-//	ID           int    `json:"id"`
-//	Age          int8   `json:"age"`
-//	UsernameTG   string `json:"tg_username"`
-//	PhoneNumber  string `json:"phone_number"`
-//	Firstname    string `json:"firstname"`
-//	Lastname     string `json:"lastname"`
-//	Patronymic   string `json:"patronymic"`
-//	Region       string `json:"region"`
-//	WorkActivity string `json:"work_activity"`
-//	CompanyName  string `json:"company_name"`
-//	Advantage    string `json:"advantage"`
-//	Hobie        string `json:"hobie"`
-//	PhotoFileID  string `json:"photo_file_id"`
-//}
 
 // Resident v2
 type Resident struct {
@@ -55,21 +37,22 @@ func FindID(data string) int {
 	return id
 }
 
-var fioRegex = regexp.MustCompile(`^[a-zA-Zа-яА-Я]`)
+var fioRegex = regexp.MustCompile(`^[a-zA-Zёа-яА-Я]+$`)
 
-func IsFIOValid(f, l, p string) error {
-	var err *boterror.BotError
+func IsFIOValid(f, l, p string) string {
+	var err []string
 
-	//if !fioRegex.MatchString(f) {
-	//	errF = errors.New("Некорректно введено имя.")
-	//	fmt.Errorf()
-	//}
-	//if !fioRegex.MatchString(l) {
-	//	errF = errors.New("Некорректно введена фамилия.")
-	//}
-	//if !fioRegex.MatchString(p) {
-	//	errF = errors.New("Некорректно введено отчество.")
-	//}
+	if !fioRegex.MatchString(f) {
+		err = append(err, "Некорректно введено имя. ")
+	}
+	if !fioRegex.MatchString(l) {
+		err = append(err, "Некорректно введена фамилия. ")
+	}
+	if !fioRegex.MatchString(p) {
+		err = append(err, "Некорректно введено отчество.")
+	}
 
-	return err
+	validInfo := strings.Join(err, "")
+
+	return validInfo
 }

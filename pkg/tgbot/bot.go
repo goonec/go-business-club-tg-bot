@@ -21,18 +21,39 @@ type Bot struct {
 	cmdView      map[string]ViewFunc
 	callbackView map[string]ViewFunc
 
-	stateStore  map[int64]Store
-	transportCh chan []string
+	stateStore  map[int64][]string
+	transportCh chan map[int64][]string
 
 	mu sync.RWMutex
 }
 
-type Store struct {
-	waiting bool
-	store   []string
+// set потокобезопасная запись структуры пользователя в map
+func (b *Bot) set(data string, userID int64) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.stateStore[userID] = append(b.stateStore[userID], data)
 }
 
-func NewBot(api *tgbotapi.BotAPI, log *logger.Logger, openAI *openai.OpenAI, transportCh chan []string) *Bot {
+// read потокобезопасные поиск пользователя в map
+func (b *Bot) read(userID int64) ([]string, bool) {
+	b.mu.RLock()
+	defer b.mu.RUnlock()
+	data, ok := b.stateStore[userID]
+	if !ok {
+		return []string{}, false
+	}
+
+	return data, true
+}
+
+// delete потокобезопасное удаление пользователя
+func (b *Bot) delete(userID int64) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	delete(b.stateStore, userID)
+}
+
+func NewBot(api *tgbotapi.BotAPI, log *logger.Logger, openAI *openai.OpenAI, transportCh chan map[int64][]string) *Bot {
 	return &Bot{
 		api:         api,
 		openAI:      openAI,
@@ -47,7 +68,7 @@ func (b *Bot) RegisterCommandView(cmd string, view ViewFunc) {
 	}
 
 	if b.stateStore == nil {
-		b.stateStore = make(map[int64]Store)
+		b.stateStore = make(map[int64][]string)
 	}
 
 	b.cmdView[cmd] = view
@@ -66,16 +87,11 @@ func (b *Bot) Run(ctx context.Context) error {
 	u.Timeout = 60
 
 	updates := b.api.GetUpdatesChan(u)
-
 	for {
 		select {
 		case update := <-updates:
 			updateCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 			b.handlerUpdate(updateCtx, &update)
-
-			//b.mu.Lock()
-			//delete(b.stateStore, update.FromChat().ID)
-			//b.mu.Unlock()
 
 			cancel()
 		case <-ctx.Done():
@@ -101,7 +117,8 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 		}
 
 		// Провекрка на отсутствие команды и ожидания для запросов к openai, работает по аналагу default
-		if _, ok := b.stateStore[update.Message.Chat.ID]; !ok {
+
+		if _, ok := b.read(update.Message.Chat.ID); !ok {
 			if !update.Message.IsCommand() {
 				openaiResponse, err := b.openAI.ResponseGPT(update.Message.Text)
 				if err != nil {
@@ -180,67 +197,62 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 	userID := update.Message.Chat.ID
 	text := update.Message.Text
 
-	if text == "/create_resident" {
-		//b.mu.RLock()
-		//defer b.mu.RUnlock()
-		store, ok := b.stateStore[userID]
-		if !ok {
-			b.stateStore[userID] = Store{}
-		}
-		store.waiting = true
+	if text == "/cancel" {
+		b.cancelMessageWithState(userID)
+		return false
+	}
 
+	if text == "/create_resident" {
+		_, ok := b.read(userID)
+		if !ok {
+			b.stateStore[userID] = []string{}
+		}
 		return true
 	}
 
-	//b.mu.RLock()
-	//defer b.mu.RUnlock()
-	s, ok := b.stateStore[userID]
+	s, ok := b.read(userID)
 	if ok {
 		switch {
-		case len(s.store) == 0:
-			s.store = append(s.store, text)
+		case len(s) == 0:
+			b.set(text, userID)
 
 			msg := tgbotapi.NewMessage(userID, "[2] Введите резюме резидента.")
 			if _, err := b.api.Send(msg); err != nil {
 				b.log.Error("failed to send message: %v", err)
 			}
-
-			//b.mu.Lock()
-			b.stateStore[userID] = s
-			//b.mu.Unlock()
-
 			return false
-		case len(s.store) == 1:
-			s.store = append(s.store, text)
+		case len(s) == 1:
+			b.set(text, userID)
 
 			msg := tgbotapi.NewMessage(userID, "[3] Загрузите фотографию, связанную с резидентом.")
 			if _, err := b.api.Send(msg); err != nil {
 				b.log.Error("failed to send message: %v", err)
 			}
-
-			//b.mu.Lock()
-			b.stateStore[userID] = s
-			//b.mu.Unlock()
-
 			return false
-		case len(s.store) == 2:
+		case len(s) == 2:
 			photo := update.Message.Photo
 			if len(photo) > 0 {
 				largestPhoto := photo[len(photo)-1]
 
 				fileID := largestPhoto.FileID
-				s.store = append(s.store, fileID)
+				b.set(fileID, userID)
 			}
-			s.waiting = false
 
-			//b.mu.Lock()
-			//defer b.mu.Unlock()
-			b.stateStore[userID] = s
-			b.transportCh <- b.stateStore[userID].store
+			d, _ := b.read(userID)
+			b.transportCh <- map[int64][]string{userID: d}
 
-			delete(b.stateStore, userID)
+			b.delete(userID)
 			return false
 		}
 	}
 	return true
+}
+
+func (b *Bot) cancelMessageWithState(userID int64) {
+	b.delete(userID)
+
+	msg := tgbotapi.NewMessage(userID, "Все команды отменены.")
+	if _, err := b.api.Send(msg); err != nil {
+		b.log.Error("failed to send message: %v", err)
+	}
 }

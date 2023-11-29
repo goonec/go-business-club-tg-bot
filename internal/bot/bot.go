@@ -34,7 +34,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	openaiRequest := openai.NewOpenAIConnect(cfg.OpenAI.Token)
 
-	transportCh := make(chan []string)
+	transportCh := make(chan map[int64][]string, 1)
 
 	residentRepo := repo.NewResidentRepository(psql)
 	residentUsecase := usecase.NewResidentUsecase(residentRepo)
