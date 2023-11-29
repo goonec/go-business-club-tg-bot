@@ -45,7 +45,6 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot := tgbot.NewBot(bot, log, openaiRequest, transportCh)
 	newBot.RegisterCommandView("start", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewStart()))
 	newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResident()))
-
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
 
 	newBot.RegisterCommandCallback("fio", residentCallback.CallbackGetResident())

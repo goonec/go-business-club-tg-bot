@@ -44,6 +44,13 @@ func (r *residentUsecase) GetResident(ctx context.Context, id int) (*entity.Resi
 func (r *residentUsecase) CreateResident(ctx context.Context, resident *entity.Resident) error {
 	err := r.residentRepo.Create(ctx, resident)
 	if err != nil {
+		errCode := repo.ErrorCode(err)
+		if errCode == repo.ForeignKeyViolation {
+			return boterror.ErrForeignKeyViolation
+		}
+		if errCode == repo.UniqueViolation {
+			return boterror.ErrUniqueViolation
+		}
 		return err
 	}
 
