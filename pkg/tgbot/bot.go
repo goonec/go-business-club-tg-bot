@@ -231,6 +231,15 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 		return true
 	}
 
+	if text == "/notify" {
+		_, ok := b.read(userID)
+		if !ok {
+			b.stateStore[userID] = make(map[string][]string)
+			b.stateStore[userID]["/notify"] = []string{}
+		}
+		return true
+	}
+
 	s, ok := b.read(userID)
 	if ok {
 		for key, value := range s {

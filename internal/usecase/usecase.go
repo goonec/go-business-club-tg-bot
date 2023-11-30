@@ -11,3 +11,9 @@ type Resident interface {
 	GetResident(ctx context.Context, id int) (*entity.Resident, error)
 	GetAllFIOResident(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error)
 }
+
+type User interface {
+	GetAllUserID(ctx context.Context) ([]int64, error)
+	GetUser(ctx context.Context, id int64) (*entity.User, error)
+	CreateUser(ctx context.Context, user *entity.User) error
+}

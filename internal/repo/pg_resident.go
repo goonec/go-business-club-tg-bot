@@ -28,7 +28,7 @@ func (r *residentRepository) GetAll(ctx context.Context) ([]entity.Resident, err
 
 	defer rows.Close()
 
-	residents := make([]entity.Resident, 0, 512)
+	residents := make([]entity.Resident, 0, 256)
 
 	for rows.Next() {
 		var r entity.Resident
@@ -61,7 +61,7 @@ func (r *residentRepository) GetAllFIO(ctx context.Context) ([]entity.FIO, error
 
 	defer rows.Close()
 
-	fio := make([]entity.FIO, 0, 512)
+	fio := make([]entity.FIO, 0, 256)
 
 	for rows.Next() {
 		var f entity.FIO
