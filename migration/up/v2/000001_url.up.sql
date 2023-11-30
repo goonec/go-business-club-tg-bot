@@ -1,6 +1,6 @@
 create table if not exists "user"(
     id bigint unique,
-    tg_username text,
+    tg_username text unique,
     create_at timestamp,
     role role default 'user',
     primary key (id)
@@ -17,18 +17,10 @@ create table if not exists resident(
     primary key (id)
 );
 
-create table if not exists user_resident(
-    id int generated always as identity,
-    user_id bigint unique,
-    tg_username text,
-    primary key (id),
-    foreign key (user_id)
-            references "user" (id),
-    foreign key (tg_username)
-        references resident (tg_username)
-);
+--select * from "user" where tg_username IN (select tg_username from resident);
 
-select id, user_id, tg_username from user_resident where user_id = 2 or tg_username = 'resident3';
+delete from resident where tg_username = 'n3ksmrnv';
+delete from "user" where id = 7;
 
 INSERT INTO "user" (id, tg_username, create_at, role)
 VALUES
@@ -41,12 +33,3 @@ VALUES
     ('resident1', 'Иван', 'Иванов', 'Иванович', 'Данные о резиденте 1', 'файл1'),
     ('resident2', 'Петр', 'Петров', 'Петрович', 'Данные о резиденте 2', 'файл2'),
     ('resident3', 'Мария', 'Маринина', 'Марковна', 'Данные о резиденте 3', 'файл3');
-
-INSERT INTO user_resident (user_id, tg_username)
-VALUES
-    (2, 'resident2'),
-    (3, 'resident3');
-
-INSERT INTO user_resident (tg_username)
-VALUES
-    ('resident1');

@@ -30,7 +30,7 @@ func NewViewResident(residentUsecase usecase.Resident, log *logger.Logger, trans
 
 func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		text := fmt.Sprintf("Доступные команды для администратора:\n/create_resident - создание резедента с его" +
+		text := fmt.Sprintf("Доступные команды для администратора:\n/create_resident - создание резедента с его " +
 			"фотографией и резюме\n/create_resident_photo - создание резедента только с фотографей\n" +
 			"/notify - создание рассылки всем участникам бота\n/cancel - используется в случае отмены администраторской команды")
 		msg := tgbotapi.NewMessage(update.FromChat().ID, text)

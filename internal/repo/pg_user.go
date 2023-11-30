@@ -2,10 +2,10 @@ package repo
 
 import (
 	"context"
-	"database/sql"
 	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/pkg/postgres"
+	"github.com/jackc/pgx/v5"
 )
 
 type userRepository struct {
@@ -19,9 +19,9 @@ func NewUserRepository(postgres *postgres.Postgres) User {
 }
 
 func (u *userRepository) Create(ctx context.Context, user *entity.User) error {
-	query := `insert into "user" (id, tg_username, create_at, role) values ($1,$2,$3,$4)`
+	query := `insert into "user" (id, tg_username, create_at) values ($1,$2,$3)`
 
-	_, err := u.Pool.Exec(ctx, query, user.ID, user.UsernameTG, user.CreatedAt, user.Role)
+	_, err := u.Pool.Exec(ctx, query, user.ID, user.UsernameTG, user.CreatedAt)
 
 	return err
 }
@@ -32,7 +32,7 @@ func (u *userRepository) GetByID(ctx context.Context, id int64) (*entity.User, e
 
 	err := u.Pool.QueryRow(ctx, query, id).Scan(&user.ID, &user.UsernameTG, &user.CreatedAt, &user.Role)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			return nil, boterror.ErrNotFound
 		}
 		return nil, err

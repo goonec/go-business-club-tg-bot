@@ -10,14 +10,12 @@ import (
 )
 
 type userUsecase struct {
-	userRepo         repo.User
-	userResidentRepo repo.UserResident
+	userRepo repo.User
 }
 
-func NewUserUsecase(userRepo repo.User, userResidentRepo repo.UserResident) User {
+func NewUserUsecase(userRepo repo.User) User {
 	return &userUsecase{
-		userRepo:         userRepo,
-		userResidentRepo: userResidentRepo,
+		userRepo: userRepo,
 	}
 }
 
@@ -33,6 +31,9 @@ func (u *userUsecase) GetAllUserID(ctx context.Context) ([]int64, error) {
 func (u *userUsecase) GetUser(ctx context.Context, id int64) (*entity.User, error) {
 	user, err := u.userRepo.GetByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, boterror.ErrNotFound) {
+			return nil, boterror.ErrNotFound
+		}
 		return nil, err
 	}
 
@@ -52,32 +53,6 @@ func (u *userUsecase) CreateUser(ctx context.Context, user *entity.User) error {
 			return boterror.ErrUniqueViolation
 		}
 		return err
-	}
-
-	userResident, err := u.userResidentRepo.Get(ctx, &entity.UserResident{UserID: user.ID})
-	if err != nil {
-		if errors.Is(err, boterror.ErrNotFound) && userResident == nil {
-			err := u.userResidentRepo.Create(ctx, user.ID)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-		return err
-	}
-
-	if userResident.UserID != 0 {
-		err := u.userResidentRepo.Update(ctx, user.ID)
-		if err != nil {
-			return err
-		}
-	}
-
-	if userResident.UsernameTG != "" {
-		err := u.userResidentRepo.Update(ctx, user.UsernameTG)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

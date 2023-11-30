@@ -5,7 +5,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goonec/business-tg-bot/internal/config"
 	"github.com/goonec/business-tg-bot/internal/handler/callback"
-	"github.com/goonec/business-tg-bot/internal/handler/middleware"
 	"github.com/goonec/business-tg-bot/internal/handler/view"
 	"github.com/goonec/business-tg-bot/internal/repo"
 	"github.com/goonec/business-tg-bot/internal/usecase"
@@ -37,16 +36,25 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	transportCh := make(chan map[int64]map[string][]string, 1)
 
 	residentRepo := repo.NewResidentRepository(psql)
+	userRepo := repo.NewUserRepository(psql)
+	//userResidentRepo := repo.NewUserResidentRepository(psql)
+
 	residentUsecase := usecase.NewResidentUsecase(residentRepo)
+	userUsecase := usecase.NewUserUsecase(userRepo)
+
 	residentView := view.NewViewResident(residentUsecase, log, transportCh)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log)
 
-	newBot := tgbot.NewBot(bot, log, openaiRequest, transportCh)
-	newBot.RegisterCommandView("admin", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewAdminCommand()))
-	newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResident()))
-	newBot.RegisterCommandView("create_resident_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResidentPhoto()))
-	newBot.RegisterCommandView("notify", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateNotify()))
+	newBot := tgbot.NewBot(bot, log, openaiRequest, userUsecase, transportCh)
+	//newBot.RegisterCommandView("admin", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewAdminCommand()))
+	//newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResident()))
+	//newBot.RegisterCommandView("create_resident_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResidentPhoto()))
+	//newBot.RegisterCommandView("notify", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateNotify()))
+	newBot.RegisterCommandView("admin", residentView.ViewAdminCommand())
+	newBot.RegisterCommandView("create_resident", residentView.ViewCreateResident())
+	newBot.RegisterCommandView("create_resident_photo", residentView.ViewCreateResidentPhoto())
+	newBot.RegisterCommandView("notify", residentView.ViewCreateNotify())
 
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
 

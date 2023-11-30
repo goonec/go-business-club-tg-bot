@@ -2,10 +2,10 @@ package repo
 
 import (
 	"context"
-	"database/sql"
 	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/pkg/postgres"
+	"github.com/jackc/pgx/v5"
 )
 
 type residentRepository struct {
@@ -110,7 +110,7 @@ func (r *residentRepository) GetByID(ctx context.Context, id int) (*entity.Resid
 		&resident.PhotoFileID)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == pgx.ErrNoRows {
 			return nil, boterror.ErrNotFound
 		}
 		return nil, err

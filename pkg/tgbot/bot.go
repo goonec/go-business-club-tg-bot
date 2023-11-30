@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/goonec/business-tg-bot/internal/boterror"
+	"github.com/goonec/business-tg-bot/internal/entity"
+	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/openai"
 	"runtime/debug"
@@ -18,6 +21,7 @@ type Bot struct {
 	api          *tgbotapi.BotAPI
 	log          *logger.Logger
 	openAI       *openai.OpenAI
+	userUsecase  usecase.User
 	cmdView      map[string]ViewFunc
 	callbackView map[string]ViewFunc
 
@@ -64,11 +68,16 @@ func (b *Bot) delete(userID int64) {
 	delete(b.stateStore, userID)
 }
 
-func NewBot(api *tgbotapi.BotAPI, log *logger.Logger, openAI *openai.OpenAI, transportCh chan map[int64]map[string][]string) *Bot {
+func NewBot(api *tgbotapi.BotAPI,
+	log *logger.Logger,
+	openAI *openai.OpenAI,
+	userUsecase usecase.User,
+	transportCh chan map[int64]map[string][]string) *Bot {
 	return &Bot{
 		api:         api,
-		openAI:      openAI,
 		log:         log,
+		openAI:      openAI,
+		userUsecase: userUsecase,
 		transportCh: transportCh,
 	}
 }
@@ -122,13 +131,30 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 	if update.Message != nil {
 		b.log.Info("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
+		_, err := b.userUsecase.GetUser(ctx, update.FromChat().ID)
+		if err != nil {
+			if errors.Is(err, boterror.ErrNotFound) {
+				user := &entity.User{
+					ID:         update.Message.From.ID,
+					UsernameTG: update.Message.From.UserName,
+				}
+
+				err := b.userUsecase.CreateUser(ctx, user)
+				if err != nil {
+					b.log.Error("userUsecase.CreateUser: %v", err)
+				}
+			} else {
+				b.log.Error("userUsecase.CreateUser: %v", err)
+				return
+			}
+		}
+
 		nextStep := b.messageWithState(update)
 		if !nextStep {
 			return
 		}
 
 		// Провекрка на отсутствие команды и ожидания для запросов к openai, работает по аналагу default
-
 		if _, ok := b.read(update.Message.Chat.ID); !ok {
 			if !update.Message.IsCommand() {
 				openaiResponse, err := b.openAI.ResponseGPT(update.Message.Text)
