@@ -37,12 +37,11 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	residentRepo := repo.NewResidentRepository(psql)
 	userRepo := repo.NewUserRepository(psql)
-	//userResidentRepo := repo.NewUserResidentRepository(psql)
 
 	residentUsecase := usecase.NewResidentUsecase(residentRepo)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 
-	residentView := view.NewViewResident(residentUsecase, log, transportCh)
+	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log)
 
@@ -51,6 +50,8 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	//newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResident()))
 	//newBot.RegisterCommandView("create_resident_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResidentPhoto()))
 	//newBot.RegisterCommandView("notify", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateNotify()))
+	//newBot.RegisterCommandView("notify", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateNotify()))
+
 	newBot.RegisterCommandView("admin", residentView.ViewAdminCommand())
 	newBot.RegisterCommandView("create_resident", residentView.ViewCreateResident())
 	newBot.RegisterCommandView("create_resident_photo", residentView.ViewCreateResidentPhoto())

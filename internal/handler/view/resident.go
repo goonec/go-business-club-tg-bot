@@ -16,13 +16,15 @@ import (
 
 type viewResident struct {
 	residentUsecase usecase.Resident
+	userUsecase     usecase.User
 	log             *logger.Logger
 	transportCh     chan map[int64]map[string][]string
 }
 
-func NewViewResident(residentUsecase usecase.Resident, log *logger.Logger, transportCh chan map[int64]map[string][]string) *viewResident {
+func NewViewResident(residentUsecase usecase.Resident, userUsecase usecase.User, log *logger.Logger, transportCh chan map[int64]map[string][]string) *viewResident {
 	return &viewResident{
 		residentUsecase: residentUsecase,
+		userUsecase:     userUsecase,
 		log:             log,
 		transportCh:     transportCh,
 	}
@@ -199,11 +201,47 @@ func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 
 func (v *viewResident) ViewCreateNotify() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "Укажите время и сообщение для рассылки.")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "[1] Укажите сообщение и фотографию для рассылки.")
 
 		if _, err := bot.Send(msg); err != nil {
 			return err
 		}
+
+		go func() {
+			subCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+
+			select {
+			case d, ok := <-v.transportCh:
+				data := d[update.Message.From.ID]["/notify"]
+				if ok {
+
+					allID, err := v.userUsecase.GetAllUserID(context.Background())
+					if err != nil {
+						v.log.Error("userUsecase.GetAllUserID: %v", err)
+						handler.HandleError(bot, update, boterror.ParseErrToText(err))
+						return
+					}
+
+					for _, id := range allID {
+						residentPhoto := tgbotapi.NewInputMediaPhoto(tgbotapi.FileID(data[1]))
+						msg := tgbotapi.NewPhoto(id, residentPhoto.Media)
+
+						msgText := tgbotapi.NewMessage(id, data[0])
+
+						if _, err := bot.Send(msg); err != nil {
+							v.log.Error("%v", err)
+						}
+
+						if _, err := bot.Send(msgText); err != nil {
+							v.log.Error("%v", err)
+						}
+					}
+				}
+			case <-subCtx.Done():
+				return
+			}
+		}()
 
 		return nil
 	}

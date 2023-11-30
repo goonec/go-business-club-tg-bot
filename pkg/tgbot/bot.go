@@ -270,6 +270,40 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 	if ok {
 		for key, value := range s {
 			switch key {
+			case "/notify":
+				switch {
+				case len(value) == 0:
+					b.set(text, key, userID)
+
+					msg := tgbotapi.NewMessage(userID, "[2] Загрузите фотографию, которая будет в рассылке.")
+					if _, err := b.api.Send(msg); err != nil {
+						b.log.Error("failed to send message: %v", err)
+					}
+					return false
+				case len(value) == 1:
+					photo := update.Message.Photo
+					if len(photo) > 0 {
+						largestPhoto := photo[len(photo)-1]
+
+						fileID := largestPhoto.FileID
+						b.set(fileID, key, userID)
+					} else {
+						b.delete(userID)
+
+						msg := tgbotapi.NewMessage(userID, "Не является изображением [2]")
+						if _, err := b.api.Send(msg); err != nil {
+							b.log.Error("failed to send message: %v", err)
+						}
+						return false
+					}
+
+					d, _ := b.read(userID)
+					b.log.Info("", d)
+					b.transportCh <- map[int64]map[string][]string{userID: d}
+
+					b.delete(userID)
+					return false
+				}
 			case "/create_resident_photo":
 				switch {
 				case len(value) == 0:

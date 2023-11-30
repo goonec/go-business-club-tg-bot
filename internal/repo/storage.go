@@ -17,10 +17,3 @@ type User interface {
 	GetByID(ctx context.Context, id int64) (*entity.User, error)
 	GetAllID(ctx context.Context) ([]int64, error)
 }
-
-type UserResident interface {
-	Create(ctx context.Context, usernameTG string, userID int64) error
-	CreateWithUsername(ctx context.Context, usernameTG string) error
-	Update(ctx context.Context, data any) error
-	Get(ctx context.Context, userResident *entity.UserResident) (*entity.UserResident, error)
-}
