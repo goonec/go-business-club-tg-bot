@@ -58,3 +58,29 @@ func (c *callbackResident) CallbackGetResident() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+func (c *callbackResident) CallbackDeleteResident() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		id := entity.FindID(update.CallbackData())
+		if id == 0 {
+			c.log.Error("entity.FindID == 0")
+			handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectCallbackData))
+		}
+
+		err := c.residentUsecase.DeleteResident(ctx, id)
+		if err != nil {
+			c.log.Info("residentUsecase.DeleteResident: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+		}
+		userID := update.CallbackQuery.Message.Chat.ID
+
+		msg := tgbotapi.NewMessage(userID, "Резидент удален успешно.")
+
+		if _, err := bot.Send(msg); err != nil {
+			//return err
+			c.log.Error("%v")
+		}
+
+		return nil
+	}
+}

@@ -10,6 +10,7 @@ type Resident interface {
 	GetAllFIO(ctx context.Context) ([]entity.FIO, error)
 	GetByID(ctx context.Context, id int) (*entity.Resident, error)
 	Create(ctx context.Context, resident *entity.Resident) error
+	DeleteByID(ctx context.Context, id int) error
 }
 
 type User interface {

@@ -118,3 +118,10 @@ func (r *residentRepository) GetByID(ctx context.Context, id int) (*entity.Resid
 
 	return &resident, nil
 }
+
+func (r *residentRepository) DeleteByID(ctx context.Context, id int) error {
+	query := `delete from resident where id = $1`
+
+	_, err := r.Pool.Exec(ctx, query, id)
+	return err
+}

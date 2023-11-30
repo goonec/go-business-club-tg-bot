@@ -56,9 +56,11 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("create_resident", residentView.ViewCreateResident())
 	newBot.RegisterCommandView("create_resident_photo", residentView.ViewCreateResidentPhoto())
 	newBot.RegisterCommandView("notify", residentView.ViewCreateNotify())
+	newBot.RegisterCommandView("delete_resident", residentView.ViewDeleteResident())
 
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
 
+	newBot.RegisterCommandCallback("fiodelete", residentCallback.CallbackDeleteResident())
 	newBot.RegisterCommandCallback("fio", residentCallback.CallbackGetResident())
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

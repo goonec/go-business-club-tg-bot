@@ -21,7 +21,10 @@ type viewResident struct {
 	transportCh     chan map[int64]map[string][]string
 }
 
-func NewViewResident(residentUsecase usecase.Resident, userUsecase usecase.User, log *logger.Logger, transportCh chan map[int64]map[string][]string) *viewResident {
+func NewViewResident(residentUsecase usecase.Resident,
+	userUsecase usecase.User,
+	log *logger.Logger,
+	transportCh chan map[int64]map[string][]string) *viewResident {
 	return &viewResident{
 		residentUsecase: residentUsecase,
 		userUsecase:     userUsecase,
@@ -34,7 +37,8 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 		text := fmt.Sprintf("Доступные команды для администратора:\n/create_resident - создание резедента с его " +
 			"фотографией и резюме\n/create_resident_photo - создание резедента только с фотографей\n" +
-			"/notify - создание рассылки всем участникам бота\n/cancel - используется в случае отмены администраторской команды")
+			"/notify - создание рассылки всем участникам бота\n/cancel - используется в случае отмены администраторской команды\n" +
+			"/delete_resident - удаление резидента")
 		msg := tgbotapi.NewMessage(update.FromChat().ID, text)
 
 		if _, err := bot.Send(msg); err != nil {
@@ -47,7 +51,7 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 
 func (v *viewResident) ViewShowAllResident() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		fioMarkup, err := v.residentUsecase.GetAllFIOResident(ctx)
+		fioMarkup, err := v.residentUsecase.GetAllFIOResident(ctx, "")
 		if err != nil {
 			v.log.Error("residentUsecase.GetAllFIOResident: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
@@ -242,6 +246,27 @@ func (v *viewResident) ViewCreateNotify() tgbot.ViewFunc {
 				return
 			}
 		}()
+
+		return nil
+	}
+}
+
+func (v *viewResident) ViewDeleteResident() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		fioMarkup, err := v.residentUsecase.GetAllFIOResident(ctx, "delete")
+		if err != nil {
+			v.log.Error("residentUsecase.GetAllFIOResident: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+		}
+
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "<b>Выберите резидента, которого нужно удалить:</b>")
+		msg.ParseMode = tgbotapi.ModeHTML
+
+		msg.ReplyMarkup = fioMarkup
+
+		if _, err := bot.Send(msg); err != nil {
+			return err
+		}
 
 		return nil
 	}

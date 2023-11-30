@@ -219,8 +219,14 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 
 func (b *Bot) callbackHasString(callbackData string) (error, ViewFunc) {
 	switch {
-	case strings.HasPrefix(callbackData, "fio"):
+	case strings.HasPrefix(callbackData, "fio_"):
 		callbackView, ok := b.callbackView["fio"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
+	case strings.HasPrefix(callbackData, "fiodelete_"):
+		callbackView, ok := b.callbackView["fiodelete"]
 		if !ok {
 			return errors.New("not found in map"), nil
 		}

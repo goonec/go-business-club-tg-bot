@@ -9,7 +9,8 @@ import (
 type Resident interface {
 	CreateResident(ctx context.Context, resident *entity.Resident) error
 	GetResident(ctx context.Context, id int) (*entity.Resident, error)
-	GetAllFIOResident(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error)
+	GetAllFIOResident(ctx context.Context, command string) (*tgbotapi.InlineKeyboardMarkup, error)
+	DeleteResident(ctx context.Context, id int) error
 }
 
 type User interface {
