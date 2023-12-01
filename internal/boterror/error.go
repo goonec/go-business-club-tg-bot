@@ -12,6 +12,7 @@ var (
 	ErrUniqueViolation          = NewError("Violation must be unique", errors.New("non_unique_value"))
 	ErrForeignKeyViolation      = NewError("Foreign Key Violation", errors.New("foreign_key_violation "))
 	ErrIsNotAdmin               = NewError("The user is not an admin", errors.New("not_admin"))
+	ErrUserNotMember            = NewError("User not member", errors.New("user_not_member"))
 )
 
 type BotError struct {
@@ -42,7 +43,8 @@ func ParseErrToText(err error) string {
 		return "TODO: Что-то с внешнеим ключом"
 	case errors.Is(err, ErrIsNotAdmin):
 		return "Доступ ограничен"
-
+	case errors.Is(err, ErrUserNotMember):
+		return "Пользователь не является участником группы"
 	}
 
 	return "Произошла внутренняя ошибка на сервере"

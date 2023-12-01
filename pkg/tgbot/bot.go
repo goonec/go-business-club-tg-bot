@@ -25,8 +25,11 @@ type Bot struct {
 	cmdView      map[string]ViewFunc
 	callbackView map[string]ViewFunc
 
-	stateStore  map[int64]map[string][]string
-	transportCh chan map[int64]map[string][]string
+	channelID int64
+
+	stateStore          map[int64]map[string][]string
+	transportCh         chan map[int64]map[string][]string
+	transportChResident chan map[int64]map[string][]string
 
 	mu sync.RWMutex
 }
@@ -72,13 +75,17 @@ func NewBot(api *tgbotapi.BotAPI,
 	log *logger.Logger,
 	openAI *openai.OpenAI,
 	userUsecase usecase.User,
-	transportCh chan map[int64]map[string][]string) *Bot {
+	transportCh chan map[int64]map[string][]string,
+	transportChResident chan map[int64]map[string][]string,
+	channelID int64) *Bot {
 	return &Bot{
-		api:         api,
-		log:         log,
-		openAI:      openAI,
-		userUsecase: userUsecase,
-		transportCh: transportCh,
+		api:                 api,
+		log:                 log,
+		openAI:              openAI,
+		userUsecase:         userUsecase,
+		transportCh:         transportCh,
+		transportChResident: transportChResident,
+		channelID:           channelID,
 	}
 }
 
@@ -120,12 +127,52 @@ func (b *Bot) Run(ctx context.Context) error {
 	}
 }
 
+func (b *Bot) middleware(update *tgbotapi.Update) error {
+	channel := tgbotapi.ChatInfoConfig{
+		tgbotapi.ChatConfig{
+			ChatID: b.channelID,
+		},
+	}
+
+	chat, err := b.api.GetChat(channel)
+	if err != nil {
+		b.log.Error("failed to get chat: %v", err)
+		return err
+	}
+
+	cfg := tgbotapi.GetChatMemberConfig{
+		ChatConfigWithUser: tgbotapi.ChatConfigWithUser{
+			ChatID: chat.ID,
+			UserID: update.FromChat().ID,
+		},
+	}
+
+	chatMember, err := b.api.GetChatMember(cfg)
+	if err != nil {
+		b.log.Error("error with chatID = %d:%v", chat.ID, err)
+		return err
+	}
+
+	if chatMember.Status != "administrator" && chatMember.Status != "member" && chatMember.Status != "creator" {
+		b.log.Error("[%s] %v", update.Message.From.UserName, boterror.ErrUserNotMember)
+		return boterror.ErrUserNotMember
+	}
+
+	return nil
+}
+
 func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
 			b.log.Error("panic recovered: %v, %s", p, string(debug.Stack()))
 		}
 	}()
+
+	// Middleware для всех комманд
+	err := b.middleware(update)
+	if err != nil {
+		return
+	}
 
 	// Если пришло сообщение
 	if update.Message != nil {
@@ -156,15 +203,20 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 
 		// Провекрка на отсутствие команды и ожидания для запросов к openai, работает по аналагу default
 		if _, ok := b.readCommand(update.Message.Chat.ID, "/chat_gpt"); ok {
-			openaiResponse, err := b.openAI.ResponseGPT(update.Message.Text)
-			if err != nil {
-				b.log.Error("failed to get response from GPT: %v", err)
-			}
+			go func() {
+				start := time.Now()
+				openaiResponse, err := b.openAI.ResponseGPT(update.Message.Text)
+				if err != nil {
+					b.log.Error("failed to get response from GPT: %v", err)
+				}
 
-			_, err = b.api.Send(tgbotapi.NewMessage(update.Message.Chat.ID, openaiResponse))
-			if err != nil {
-				b.log.Error("failed to send message from ChatGPT %v", err)
-			}
+				_, err = b.api.Send(tgbotapi.NewMessage(update.Message.Chat.ID, openaiResponse))
+				if err != nil {
+					b.log.Error("failed to send message from ChatGPT %v", err)
+				}
+				end := time.Since(start)
+				b.log.Info("[%s] Время ответа: %f", update.Message.From.UserName, end.Seconds())
+			}()
 			return
 		}
 
@@ -185,10 +237,10 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 				b.delete(update.Message.Chat.ID)
 			}
 
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, boterror.ParseErrToText(err))
-			if _, err := b.api.Send(msg); err != nil {
-				b.log.Error("failed to send message: %v", err)
-			}
+			//msg := tgbotapi.NewMessage(update.Message.Chat.ID, boterror.ParseErrToText(err))
+			//if _, err := b.api.Send(msg); err != nil {
+			//	b.log.Error("failed to send message: %v", err)
+			//}
 			return
 		}
 		// Если нажали на кнопку
@@ -281,7 +333,7 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 		if _, err := b.api.Send(msg); err != nil {
 			b.log.Error("failed to send message: %v", err)
 		}
-		return true
+		return false
 	}
 
 	if text == "/notify" {
@@ -399,7 +451,7 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 					}
 
 					d, _ := b.read(userID)
-					b.transportCh <- map[int64]map[string][]string{userID: d}
+					b.transportChResident <- map[int64]map[string][]string{userID: d}
 
 					b.delete(userID)
 					return false

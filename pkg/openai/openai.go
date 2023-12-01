@@ -30,8 +30,8 @@ func NewOpenAIConnect(apiKey string) *OpenAI {
 }
 
 func (o *OpenAI) ResponseGPT(text string) (string, error) {
-	o.mu.Lock()
-	defer o.mu.Unlock()
+	//o.mu.Lock()
+	//defer o.mu.Unlock()
 
 	request := openai.ChatCompletionRequest{
 		Model: o.model,
@@ -46,7 +46,7 @@ func (o *OpenAI) ResponseGPT(text string) (string, error) {
 		TopP:        1,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
 	resp, err := o.client.CreateChatCompletion(ctx, request)

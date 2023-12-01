@@ -15,21 +15,24 @@ import (
 )
 
 type viewResident struct {
-	residentUsecase usecase.Resident
-	userUsecase     usecase.User
-	log             *logger.Logger
-	transportCh     chan map[int64]map[string][]string
+	residentUsecase     usecase.Resident
+	userUsecase         usecase.User
+	log                 *logger.Logger
+	transportCh         chan map[int64]map[string][]string
+	transportСhResident chan map[int64]map[string][]string
 }
 
 func NewViewResident(residentUsecase usecase.Resident,
 	userUsecase usecase.User,
 	log *logger.Logger,
-	transportCh chan map[int64]map[string][]string) *viewResident {
+	transportCh chan map[int64]map[string][]string,
+	transportСhResident chan map[int64]map[string][]string) *viewResident {
 	return &viewResident{
-		residentUsecase: residentUsecase,
-		userUsecase:     userUsecase,
-		log:             log,
-		transportCh:     transportCh,
+		residentUsecase:     residentUsecase,
+		userUsecase:         userUsecase,
+		log:                 log,
+		transportCh:         transportCh,
+		transportСhResident: transportСhResident,
 	}
 }
 
@@ -84,7 +87,7 @@ func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
 			defer cancel()
 
 			select {
-			case d, ok := <-v.transportCh:
+			case d, ok := <-v.transportСhResident:
 				data := d[update.Message.From.ID]["/create_resident"]
 				if ok {
 					fioTg := strings.Split(data[0], " ")
@@ -233,11 +236,11 @@ func (v *viewResident) ViewCreateNotify() tgbot.ViewFunc {
 
 						msgText := tgbotapi.NewMessage(id, data[0])
 
-						if _, err := bot.Send(msg); err != nil {
+						if _, err := bot.Send(msgText); err != nil {
 							v.log.Error("%v", err)
 						}
 
-						if _, err := bot.Send(msgText); err != nil {
+						if _, err := bot.Send(msg); err != nil {
 							v.log.Error("%v", err)
 						}
 					}

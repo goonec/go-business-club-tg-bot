@@ -43,7 +43,7 @@ func (c *callbackResident) CallbackGetResident() tgbot.ViewFunc {
 		residentPhoto := tgbotapi.NewInputMediaPhoto(tgbotapi.FileID(resident.PhotoFileID))
 
 		msg := tgbotapi.NewPhoto(userID, residentPhoto.Media)
-		text := fmt.Sprintf("%s %s\n %s", resident.FIO.Firstname, resident.FIO.Lastname, resident.ResidentData)
+		text := fmt.Sprintf("%s %s\n\n%s", resident.FIO.Firstname, resident.FIO.Lastname, resident.ResidentData)
 
 		msgText := tgbotapi.NewMessage(userID, text)
 
@@ -77,8 +77,8 @@ func (c *callbackResident) CallbackDeleteResident() tgbot.ViewFunc {
 		msg := tgbotapi.NewMessage(userID, "Резидент удален успешно.")
 
 		if _, err := bot.Send(msg); err != nil {
-			//return err
 			c.log.Error("%v")
+			return err
 		}
 
 		return nil
