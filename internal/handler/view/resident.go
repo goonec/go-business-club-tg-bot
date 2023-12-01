@@ -205,7 +205,7 @@ func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 
 func (v *viewResident) ViewCreateNotify() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "[1] Укажите сообщение и фотографию для рассылки.")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "[1] Укажите сообщение для рассылки.")
 
 		if _, err := bot.Send(msg); err != nil {
 			return err

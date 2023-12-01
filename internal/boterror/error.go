@@ -10,7 +10,8 @@ var (
 	ErrIncorrectCallbackData    = NewError("Incorrect Callback Data", errors.New("incorrect_callback"))
 	ErrIncorrectAdminFirstInput = NewError("Must be 4 input values", errors.New("incorrect_input"))
 	ErrUniqueViolation          = NewError("Violation must be unique", errors.New("non_unique_value"))
-	ErrForeignKeyViolation      = NewError("-", errors.New("foreign_key_violation "))
+	ErrForeignKeyViolation      = NewError("Foreign Key Violation", errors.New("foreign_key_violation "))
+	ErrIsNotAdmin               = NewError("The user is not an admin", errors.New("not_admin"))
 )
 
 type BotError struct {
@@ -39,6 +40,9 @@ func ParseErrToText(err error) string {
 		return "Телеграм пользователя должен быть уникальным [1]"
 	case errors.Is(err, ErrForeignKeyViolation):
 		return "TODO: Что-то с внешнеим ключом"
+	case errors.Is(err, ErrIsNotAdmin):
+		return "Доступ ограничен"
+
 	}
 
 	return "Произошла внутренняя ошибка на сервере"

@@ -155,19 +155,17 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 		}
 
 		// Провекрка на отсутствие команды и ожидания для запросов к openai, работает по аналагу default
-		if _, ok := b.read(update.Message.Chat.ID); !ok {
-			if !update.Message.IsCommand() {
-				openaiResponse, err := b.openAI.ResponseGPT(update.Message.Text)
-				if err != nil {
-					b.log.Error("failed to get response from GPT: %v", err)
-				}
-
-				_, err = b.api.Send(tgbotapi.NewMessage(update.Message.Chat.ID, openaiResponse))
-				if err != nil {
-					b.log.Error("failed to send message from ChatGPT %v", err)
-				}
-				return
+		if _, ok := b.readCommand(update.Message.Chat.ID, "/chat_gpt"); ok {
+			openaiResponse, err := b.openAI.ResponseGPT(update.Message.Text)
+			if err != nil {
+				b.log.Error("failed to get response from GPT: %v", err)
 			}
+
+			_, err = b.api.Send(tgbotapi.NewMessage(update.Message.Chat.ID, openaiResponse))
+			if err != nil {
+				b.log.Error("failed to send message from ChatGPT %v", err)
+			}
+			return
 		}
 
 		var view ViewFunc
@@ -183,8 +181,11 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 
 		if err := view(ctx, b.api, update); err != nil {
 			b.log.Error("failed to handle update: %v", err)
+			if err == boterror.ErrIsNotAdmin {
+				b.delete(update.Message.Chat.ID)
+			}
 
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "internal error")
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, boterror.ParseErrToText(err))
 			if _, err := b.api.Send(msg); err != nil {
 				b.log.Error("failed to send message: %v", err)
 			}
@@ -245,6 +246,11 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 		return false
 	}
 
+	if text == "/stop_chat_gpt" {
+		b.cancelChatGptDialog(userID)
+		return false
+	}
+
 	if text == "/create_resident" {
 		_, ok := b.read(userID)
 		if !ok {
@@ -259,6 +265,21 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 		if !ok {
 			b.stateStore[userID] = make(map[string][]string)
 			b.stateStore[userID]["/create_resident_photo"] = []string{}
+		}
+		return true
+	}
+
+	if text == "/chat_gpt" {
+		_, ok := b.read(userID)
+		if !ok {
+			b.stateStore[userID] = make(map[string][]string)
+			b.stateStore[userID]["/chat_gpt"] = []string{}
+		}
+
+		msg := tgbotapi.NewMessage(userID, "Начните общение с Chat GPT!\nЕсли вы хотите остановить чат и воспользоваться другими командами"+
+			"используейте - /stop_chat_gpt")
+		if _, err := b.api.Send(msg); err != nil {
+			b.log.Error("failed to send message: %v", err)
 		}
 		return true
 	}
@@ -304,7 +325,6 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 					}
 
 					d, _ := b.read(userID)
-					b.log.Info("", d)
 					b.transportCh <- map[int64]map[string][]string{userID: d}
 
 					b.delete(userID)
@@ -371,7 +391,7 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 					} else {
 						b.delete(userID)
 
-						msg := tgbotapi.NewMessage(userID, "Не является изображением [2].")
+						msg := tgbotapi.NewMessage(userID, "Не является изображением [3].")
 						if _, err := b.api.Send(msg); err != nil {
 							b.log.Error("failed to send message: %v", err)
 						}
@@ -385,8 +405,9 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 					return false
 				}
 			}
+
 		}
-		return false
+		return true
 	}
 	return true
 }
@@ -395,6 +416,15 @@ func (b *Bot) cancelMessageWithState(userID int64) {
 	b.delete(userID)
 
 	msg := tgbotapi.NewMessage(userID, "Все команды отменены.")
+	if _, err := b.api.Send(msg); err != nil {
+		b.log.Error("failed to send message: %v", err)
+	}
+}
+
+func (b *Bot) cancelChatGptDialog(userID int64) {
+	b.delete(userID)
+
+	msg := tgbotapi.NewMessage(userID, "Chat GPT остановлен.")
 	if _, err := b.api.Send(msg); err != nil {
 		b.log.Error("failed to send message: %v", err)
 	}

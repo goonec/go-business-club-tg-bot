@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/goonec/business-tg-bot/internal/boterror"
 	"log"
 
 	"github.com/goonec/business-tg-bot/pkg/tgbot"
@@ -33,23 +34,27 @@ func AdminMiddleware(channelID int64, next tgbot.ViewFunc) tgbot.ViewFunc {
 			}
 		}
 
-		if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID,
-			"У вас нет прав на выполнение этой команды.")); err != nil {
-			return err
-		}
+		//if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID,
+		//	"У вас нет прав на выполнение этой команды.")); err != nil {
+		//	return err
+		//}
 
-		return nil
+		return boterror.ErrIsNotAdmin
 	}
 }
 
 var adminConfigMenu = tgbotapi.NewSetMyCommands(
 	tgbotapi.BotCommand{
-		Command:     "/admin",
-		Description: "Инструкция по использованию админки",
+		Command:     "/resident_list",
+		Description: "Показать список всех резидентов",
 	},
 	tgbotapi.BotCommand{
 		Command:     "/chat_gpt",
 		Description: "Общение с чатом",
+	},
+	tgbotapi.BotCommand{
+		Command:     "/stop_chat_gpt",
+		Description: "Завершение общения с чатом",
 	},
 	//tgbotapi.BotCommand{
 	//	Command:     "/create_resident_photo",

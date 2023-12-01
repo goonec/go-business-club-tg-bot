@@ -53,12 +53,6 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("notify", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateNotify()))
 	newBot.RegisterCommandView("delete_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewDeleteResident()))
 
-	//newBot.RegisterCommandView("admin", residentView.ViewAdminCommand())
-	//newBot.RegisterCommandView("create_resident", residentView.ViewCreateResident())
-	//newBot.RegisterCommandView("create_resident_photo", residentView.ViewCreateResidentPhoto())
-	//newBot.RegisterCommandView("notify", residentView.ViewCreateNotify())
-	//newBot.RegisterCommandView("delete_resident", residentView.ViewDeleteResident())
-
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
 
 	newBot.RegisterCommandCallback("fiodelete", residentCallback.CallbackDeleteResident())
