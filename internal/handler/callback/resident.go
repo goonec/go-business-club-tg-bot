@@ -84,3 +84,46 @@ func (c *callbackResident) CallbackDeleteResident() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+func (c *callbackResident) CallbackShowAllResident() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		fioMarkup, err := c.residentUsecase.GetAllFIOResident(ctx, "")
+		if err != nil {
+			c.log.Error("residentUsecase.GetAllFIOResident: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+		}
+
+		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Список резидентов 💼")
+
+		msg.ParseMode = tgbotapi.ModeHTML
+		msg.ReplyMarkup = fioMarkup
+		if _, err := bot.Send(msg); err != nil {
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		return nil
+	}
+}
+
+func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		startMenu := tgbotapi.NewInlineKeyboardMarkup(
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Запустить Chat GPT  🤖️", "chat_gpt"),
+				tgbotapi.NewInlineKeyboardButtonData("Остановить Chat GPT ⏸", "stop_chat_gpt")),
+			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")))
+
+		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "<b>Список команд доступных для использования бота</b> ⏩")
+
+		msg.ParseMode = tgbotapi.ModeHTML
+		msg.ReplyMarkup = &startMenu
+		if _, err := bot.Send(msg); err != nil {
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		return nil
+	}
+}

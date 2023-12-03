@@ -290,6 +290,18 @@ func (b *Bot) callbackHasString(callbackData string) (error, ViewFunc) {
 			return errors.New("not found in map"), nil
 		}
 		return nil, callbackView
+	case strings.HasPrefix(callbackData, "resident"):
+		callbackView, ok := b.callbackView["resident"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
+	case strings.HasPrefix(callbackData, "main_menu"):
+		callbackView, ok := b.callbackView["main_menu"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
 	}
 
 	return nil, nil
