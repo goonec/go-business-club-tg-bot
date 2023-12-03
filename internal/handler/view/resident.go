@@ -90,6 +90,15 @@ func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
 			case d, ok := <-v.transportСhResident:
 				data := d[update.Message.From.ID]["/create_resident"]
 				if ok {
+					if data == nil || len(data) == 0 {
+						msg := tgbotapi.NewMessage(update.Message.Chat.ID, boterror.ParseErrToText(boterror.ErrInternalError))
+						v.log.Error("ViewCreateResident: data == nil || len(data) == 0: %v", boterror.ErrInternalError)
+						if _, err := bot.Send(msg); err != nil {
+							v.log.Error("%v")
+						}
+						return
+					}
+
 					fioTg := strings.Split(data[0], " ")
 					if len(fioTg) != 4 {
 						handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectAdminFirstInput))
@@ -156,6 +165,15 @@ func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 			case d, ok := <-v.transportCh:
 				data := d[update.Message.From.ID]["/create_resident_photo"]
 				if ok {
+					if data == nil || len(data) == 0 {
+						msg := tgbotapi.NewMessage(update.Message.Chat.ID, boterror.ParseErrToText(boterror.ErrInternalError))
+						v.log.Error("ViewCreateResidentPhoto: data == nil || len(data) == 0: %v", boterror.ErrInternalError)
+						if _, err := bot.Send(msg); err != nil {
+							v.log.Error("%v")
+						}
+						return
+					}
+
 					fioTg := strings.Split(data[0], " ")
 					if len(fioTg) != 4 {
 						handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectAdminFirstInput))
@@ -222,6 +240,14 @@ func (v *viewResident) ViewCreateNotify() tgbot.ViewFunc {
 			case d, ok := <-v.transportCh:
 				data := d[update.Message.From.ID]["/notify"]
 				if ok {
+					if data == nil || len(data) == 0 {
+						msg := tgbotapi.NewMessage(update.Message.Chat.ID, boterror.ParseErrToText(boterror.ErrInternalError))
+						v.log.Error("ViewCreateNotify: data == nil || len(data) == 0: %v", boterror.ErrInternalError)
+						if _, err := bot.Send(msg); err != nil {
+							v.log.Error("%v")
+						}
+						return
+					}
 
 					allID, err := v.userUsecase.GetAllUserID(context.Background())
 					if err != nil {

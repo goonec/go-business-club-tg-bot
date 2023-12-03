@@ -37,7 +37,7 @@ func FindID(data string) int {
 	return id
 }
 
-var fioRegex = regexp.MustCompile(`^[a-zA-Zёа-яА-Я]+$`)
+var fioRegex = regexp.MustCompile(`^[a-zA-Zёа-яА-Я-]+$`)
 
 func IsFIOValid(f, l, p string) string {
 	var err []string

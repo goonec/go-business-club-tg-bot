@@ -13,6 +13,7 @@ var (
 	ErrForeignKeyViolation      = NewError("Foreign Key Violation", errors.New("foreign_key_violation "))
 	ErrIsNotAdmin               = NewError("The user is not an admin", errors.New("not_admin"))
 	ErrUserNotMember            = NewError("User not member", errors.New("user_not_member"))
+	ErrInternalError            = NewError("Internal error", errors.New("internal_error"))
 )
 
 type BotError struct {
