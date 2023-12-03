@@ -3,6 +3,7 @@ package boterror
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 var (
@@ -33,6 +34,7 @@ func NewError(msg string, err error) *BotError {
 }
 
 func ParseErrToText(err error) string {
+
 	switch {
 	case errors.Is(err, ErrNotFound):
 		return "Резидент не был найден"
@@ -46,6 +48,12 @@ func ParseErrToText(err error) string {
 		return "Доступ ограничен"
 	case errors.Is(err, ErrUserNotMember):
 		return "Пользователь не является участником группы"
+	case strings.Contains(err.Error(), "Bad Request: message caption is too long"):
+		fmt.Println(err.Error())
+		err2 := errors.Unwrap(err)
+		fmt.Println(err2.Error())
+		return "Описание к данному сообщению слишком большое, максимальный размер 1024 символа"
+
 	}
 
 	return "Произошла внутренняя ошибка на сервере"

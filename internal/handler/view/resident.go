@@ -2,6 +2,7 @@ package view
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goonec/business-tg-bot/internal/boterror"
@@ -11,6 +12,7 @@ import (
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/tgbot"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -60,7 +62,7 @@ func (v *viewResident) ViewShowAllResident() tgbot.ViewFunc {
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
 		}
 
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "<b>Список резидентов</b>")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, `<strong>Список резидентов</strong> 📋`)
 		msg.ParseMode = tgbotapi.ModeHTML
 
 		msg.ReplyMarkup = fioMarkup
@@ -233,6 +235,8 @@ func (v *viewResident) ViewCreateNotify() tgbot.ViewFunc {
 		}
 
 		go func() {
+			var once sync.Once
+
 			subCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 			defer cancel()
 
@@ -259,15 +263,21 @@ func (v *viewResident) ViewCreateNotify() tgbot.ViewFunc {
 					for _, id := range allID {
 						residentPhoto := tgbotapi.NewInputMediaPhoto(tgbotapi.FileID(data[1]))
 						msg := tgbotapi.NewPhoto(id, residentPhoto.Media)
+						msg.Caption = data[0]
 
-						msgText := tgbotapi.NewMessage(id, data[0])
+						//msgText := tgbotapi.NewMessage(id, data[0])
 
-						if _, err := bot.Send(msgText); err != nil {
-							v.log.Error("%v", err)
-						}
+						//if _, err := bot.Send(msgText); err != nil {
+						//	v.log.Error("%v", err)
+						//}
 
 						if _, err := bot.Send(msg); err != nil {
-							v.log.Error("%v", err)
+							once.Do(func() {
+								v.log.Error("%v :len(%d)", err, len([]rune(data[0])))
+								errLongCap := errors.New(fmt.Sprintf("Количество символов в вашем сообщении: %d", len([]rune(data[0]))))
+								err = errors.Join(err, errLongCap)
+								handler.HandleError(bot, update, boterror.ParseErrToText(err))
+							})
 						}
 					}
 				}

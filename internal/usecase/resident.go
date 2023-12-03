@@ -70,7 +70,7 @@ func (r *residentUsecase) createFIOResidentMarkup(fio []entity.FIO, command stri
 	var rows [][]tgbotapi.InlineKeyboardButton
 	var row []tgbotapi.InlineKeyboardButton
 
-	buttonsPerRow := 2
+	buttonsPerRow := 3
 
 	for i, el := range fio {
 		button := tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%s %s.%s.", el.Firstname, el.Lastname, el.Patronymic),
