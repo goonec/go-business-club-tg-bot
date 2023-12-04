@@ -40,8 +40,9 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	residentRepo := repo.NewResidentRepository(psql)
 	userRepo := repo.NewUserRepository(psql)
 	businessClusterRepo := repo.NewBusinessClusterRepository(psql)
+	businessClusterResidentRepo := repo.NewBusinessClusterResidentRepository(psql)
 
-	residentUsecase := usecase.NewResidentUsecase(residentRepo, businessClusterRepo)
+	residentUsecase := usecase.NewResidentUsecase(residentRepo, businessClusterRepo, businessClusterResidentRepo)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 	businessClusterUsecase := usecase.NewBusinessClusterUsecase(businessClusterRepo)
 

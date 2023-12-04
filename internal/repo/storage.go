@@ -20,10 +20,11 @@ type User interface {
 }
 
 type BusinessCluster interface {
-	Create(ctx context.Context, name string) error
+	Create(ctx context.Context, name string) (int, error)
 	GetByName(ctx context.Context, name string) (*entity.BusinessCluster, error)
 	GetAll(ctx context.Context) ([]entity.BusinessCluster, error)
 }
 
 type BusinessClusterResident interface {
+	Create(ctx context.Context, IDBusinessCluster int, IDResident int) error
 }

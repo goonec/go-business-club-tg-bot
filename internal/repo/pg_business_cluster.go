@@ -18,11 +18,12 @@ func NewBusinessClusterRepository(postgres *postgres.Postgres) BusinessCluster {
 	}
 }
 
-func (b *businessClusterRepo) Create(ctx context.Context, name string) error {
+func (b *businessClusterRepo) Create(ctx context.Context, name string) (int, error) {
 	query := `insert into business_cluster (name) values ($1) returning id`
+	var id int
 
-	_, err := b.Pool.Exec(ctx, query, name)
-	return err
+	err := b.Pool.QueryRow(ctx, query, name).Scan(&id)
+	return id, err
 }
 func (b *businessClusterRepo) GetByName(ctx context.Context, name string) (*entity.BusinessCluster, error) {
 	query := `select id, name from business_cluster where name = $1`

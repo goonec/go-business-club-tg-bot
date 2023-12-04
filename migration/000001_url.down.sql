@@ -1,5 +1,8 @@
 
-DROP TABLE "user";
+drop table if exists "user";
 
-DROP TABLE resident;
+drop table if exists resident;
 
+drop table if exists business_cluster;
+
+drop table if exists business_cluster_resident;

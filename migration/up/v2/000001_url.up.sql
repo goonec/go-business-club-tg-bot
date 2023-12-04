@@ -36,13 +36,14 @@ create unique index id on business_cluster (name);
 
 create table if not exists business_cluster_resident
 (
-    id int,
+    id_business_cluster int,
     id_resident int,
-    primary key (id,id_resident),
-    foreign key (id)
+    primary key (id_business_cluster,id_resident),
+    foreign key (id_business_cluster)
         references business_cluster (id) on delete cascade,
     foreign key (id_resident)
         references resident (id) on delete cascade
 );
+
 
 --select * from "user" where tg_username IN (select tg_username from resident);
