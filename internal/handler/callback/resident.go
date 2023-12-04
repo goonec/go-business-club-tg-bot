@@ -77,8 +77,9 @@ func (c *callbackResident) CallbackDeleteResident() tgbot.ViewFunc {
 		msg := tgbotapi.NewMessage(userID, "Резидент удален успешно.")
 
 		if _, err := bot.Send(msg); err != nil {
-			c.log.Error("%v")
-			return err
+			c.log.Error("failed to send message: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
 		}
 
 		return nil
@@ -98,6 +99,7 @@ func (c *callbackResident) CallbackShowAllResident() tgbot.ViewFunc {
 		msg.ParseMode = tgbotapi.ModeHTML
 		msg.ReplyMarkup = fioMarkup
 		if _, err := bot.Send(msg); err != nil {
+			c.log.Error("failed to send message: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
 			return nil
 		}
@@ -110,8 +112,8 @@ func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 		startMenu := tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Запустить Chat GPT  🤖️", "chat_gpt"),
-				tgbotapi.NewInlineKeyboardButtonData("Остановить Chat GPT ⏸", "stop_chat_gpt")),
+				tgbotapi.NewInlineKeyboardButtonData("Запустить Chat GPT  🤖️", "chat_gpt")),
+			//tgbotapi.NewInlineKeyboardButtonData("Остановить Chat GPT ⏸", "stop_chat_gpt")),
 			tgbotapi.NewInlineKeyboardRow(
 				tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")))
 
@@ -120,6 +122,7 @@ func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 		msg.ParseMode = tgbotapi.ModeHTML
 		msg.ReplyMarkup = &startMenu
 		if _, err := bot.Send(msg); err != nil {
+			c.log.Error("failed to send message: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
 			return nil
 		}
@@ -127,3 +130,29 @@ func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+func (c *callbackResident) CallbackStartChatGPT() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "Начните общение с Chat GPT!  💬\nЕсли вы хотите остановить чат и воспользоваться другими командами "+
+			"используейте - /stop_chat_gpt")
+		if _, err := bot.Send(msg); err != nil {
+			c.log.Error("failed to send message: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		return nil
+	}
+}
+
+//func (c *callbackResident) CallbackStopChatGPT() tgbot.ViewFunc {
+//	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+//		msg := tgbotapi.NewMessage(update.FromChat().ID, "Chat GPT остановлен.")
+//		if _, err := bot.Send(msg); err != nil {
+//			c.log.Error("failed to send message: %v", err)
+//			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+//			return nil
+//		}
+//		return nil
+//	}
+//}

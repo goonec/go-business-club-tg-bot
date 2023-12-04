@@ -202,7 +202,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 		}
 
 		// Провекрка на отсутствие команды и ожидания для запросов к openai, работает по аналагу default
-		if _, ok := b.readCommand(update.Message.Chat.ID, "/chat_gpt"); ok {
+		if _, ok := b.readCommand(update.Message.Chat.ID, "chat_gpt"); ok {
 			go func() {
 				_, err = b.api.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Запрос создан, ожидайте... ⏳"))
 				if err != nil {
@@ -254,9 +254,9 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 		b.log.Info("[%s] %s", update.CallbackQuery.From.UserName, update.CallbackData())
 
 		var callback ViewFunc
-		callbackData := update.CallbackData()
+		//callbackData := update.CallbackData()
 
-		err, callbackView := b.callbackHasString(callbackData)
+		err, callbackView := b.callbackHasString(update)
 		if err != nil {
 			b.log.Error("%v", err)
 			return
@@ -276,7 +276,9 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 	}
 }
 
-func (b *Bot) callbackHasString(callbackData string) (error, ViewFunc) {
+func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
+	callbackData := update.CallbackData()
+
 	switch {
 	case strings.HasPrefix(callbackData, "fio_"):
 		callbackView, ok := b.callbackView["fio"]
@@ -298,6 +300,18 @@ func (b *Bot) callbackHasString(callbackData string) (error, ViewFunc) {
 		return nil, callbackView
 	case strings.HasPrefix(callbackData, "main_menu"):
 		callbackView, ok := b.callbackView["main_menu"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
+	case strings.HasPrefix(callbackData, "chat_gpt"):
+		_, ok := b.read(update.CallbackQuery.Message.Chat.ID)
+		if !ok {
+			b.stateStore[update.CallbackQuery.Message.Chat.ID] = make(map[string][]string)
+			b.stateStore[update.CallbackQuery.Message.Chat.ID]["chat_gpt"] = []string{}
+		}
+
+		callbackView, ok := b.callbackView["chat_gpt"]
 		if !ok {
 			return errors.New("not found in map"), nil
 		}
@@ -339,20 +353,20 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 		return true
 	}
 
-	if text == "/chat_gpt" {
-		_, ok := b.read(userID)
-		if !ok {
-			b.stateStore[userID] = make(map[string][]string)
-			b.stateStore[userID]["/chat_gpt"] = []string{}
-		}
-
-		msg := tgbotapi.NewMessage(userID, "Начните общение с Chat GPT!  💬\nЕсли вы хотите остановить чат и воспользоваться другими командами "+
-			"используейте - /stop_chat_gpt")
-		if _, err := b.api.Send(msg); err != nil {
-			b.log.Error("failed to send message: %v", err)
-		}
-		return false
-	}
+	//if text == "/chat_gpt" {
+	//	_, ok := b.read(userID)
+	//	if !ok {
+	//		b.stateStore[userID] = make(map[string][]string)
+	//		b.stateStore[userID]["/chat_gpt"] = []string{}
+	//	}
+	//
+	//	//msg := tgbotapi.NewMessage(userID, "Начните общение с Chat GPT!  💬\nЕсли вы хотите остановить чат и воспользоваться другими командами "+
+	//	//	"используейте - /stop_chat_gpt")
+	//	//if _, err := b.api.Send(msg); err != nil {
+	//	//	b.log.Error("failed to send message: %v", err)
+	//	//}
+	//	return false
+	//}
 
 	if text == "/notify" {
 		_, ok := b.read(userID)
