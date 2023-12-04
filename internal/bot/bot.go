@@ -39,13 +39,16 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	residentRepo := repo.NewResidentRepository(psql)
 	userRepo := repo.NewUserRepository(psql)
+	businessClusterRepo := repo.NewBusinessClusterRepository(psql)
 
-	residentUsecase := usecase.NewResidentUsecase(residentRepo)
+	residentUsecase := usecase.NewResidentUsecase(residentRepo, businessClusterRepo)
 	userUsecase := usecase.NewUserUsecase(userRepo)
+	businessClusterUsecase := usecase.NewBusinessClusterUsecase(businessClusterRepo)
 
 	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh, transportСhResident)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log)
+	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, log)
 
 	newBot := tgbot.NewBot(bot, log, openaiRequest, userUsecase, transportCh, transportСhResident, cfg.Chat.ChatID)
 	newBot.RegisterCommandView("admin", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewAdminCommand()))
@@ -63,6 +66,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	newBot.RegisterCommandCallback("main_menu", residentCallback.CallbackStartButton())
 
+	newBot.RegisterCommandCallback("cluster", businessClusterCallback.CallbackShowAllBusinessCluster())
 	newBot.RegisterCommandCallback("fiodelete", residentCallback.CallbackDeleteResident())
 	newBot.RegisterCommandCallback("fio", residentCallback.CallbackGetResident())
 

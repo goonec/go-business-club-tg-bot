@@ -19,7 +19,7 @@ func NewBusinessClusterRepository(postgres *postgres.Postgres) BusinessCluster {
 }
 
 func (b *businessClusterRepo) Create(ctx context.Context, name string) error {
-	query := `insert into business_cluster (name) values ($1)`
+	query := `insert into business_cluster (name) values ($1) returning id`
 
 	_, err := b.Pool.Exec(ctx, query, name)
 	return err

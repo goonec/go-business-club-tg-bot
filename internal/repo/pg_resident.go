@@ -84,18 +84,19 @@ func (r *residentRepository) GetAllFIO(ctx context.Context) ([]entity.FIO, error
 	return fio, nil
 }
 
-func (r *residentRepository) Create(ctx context.Context, resident *entity.Resident) error {
+func (r *residentRepository) Create(ctx context.Context, resident *entity.Resident) (int, error) {
 	query := `insert into resident (tg_username,firstname,lastname,patronymic,resident_data,photo_file_id) 
-				values ($1,$2,$3,$4,$5,$6)`
+				values ($1,$2,$3,$4,$5,$6) returning id`
+	var id int
 
-	_, err := r.Pool.Exec(ctx, query, resident.UsernameTG,
+	err := r.Pool.QueryRow(ctx, query, resident.UsernameTG,
 		resident.FIO.Firstname,
 		resident.FIO.Lastname,
 		resident.FIO.Patronymic,
 		resident.ResidentData,
-		resident.PhotoFileID)
+		resident.PhotoFileID).Scan(&id)
 
-	return err
+	return id, err
 }
 
 func (r *residentRepository) GetByID(ctx context.Context, id int) (*entity.Resident, error) {

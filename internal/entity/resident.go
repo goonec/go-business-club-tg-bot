@@ -14,6 +14,8 @@ type Resident struct {
 	PhotoFileID  string `json:"photo_file_id"`
 
 	FIO FIO `json:"fio"`
+
+	BusinessCluster BusinessCluster `json:"business_cluster"`
 }
 
 type FIO struct {

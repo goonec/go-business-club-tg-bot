@@ -11,12 +11,19 @@ import (
 )
 
 type residentUsecase struct {
-	residentRepo repo.Resident
+	residentRepo        repo.Resident
+	businessClusterRepo repo.BusinessCluster
 }
 
-func NewResidentUsecase(residentRepo repo.Resident) Resident {
+type settings struct {
+	prefix  string
+	command string
+}
+
+func NewResidentUsecase(residentRepo repo.Resident, businessClusterRepo repo.BusinessCluster) Resident {
 	return &residentUsecase{
-		residentRepo: residentRepo,
+		residentRepo:        residentRepo,
+		businessClusterRepo: businessClusterRepo,
 	}
 }
 
@@ -42,7 +49,7 @@ func (r *residentUsecase) GetResident(ctx context.Context, id int) (*entity.Resi
 }
 
 func (r *residentUsecase) CreateResident(ctx context.Context, resident *entity.Resident) error {
-	err := r.residentRepo.Create(ctx, resident)
+	_, err := r.residentRepo.Create(ctx, resident)
 	if err != nil {
 		errCode := repo.ErrorCode(err)
 		if errCode == repo.ForeignKeyViolation {
@@ -50,6 +57,25 @@ func (r *residentUsecase) CreateResident(ctx context.Context, resident *entity.R
 		}
 		if errCode == repo.UniqueViolation {
 			return boterror.ErrUniqueViolation
+		}
+		return err
+	}
+
+	_, err = r.businessClusterRepo.GetByName(ctx, resident.BusinessCluster.Name)
+	if err != nil {
+		if errors.Is(err, boterror.ErrNotFound) {
+			err := r.businessClusterRepo.Create(ctx, resident.BusinessCluster.Name)
+			if err != nil {
+				errCode := repo.ErrorCode(err)
+				if errCode == repo.ForeignKeyViolation {
+					return boterror.ErrForeignKeyViolation
+				}
+				if errCode == repo.UniqueViolation {
+					return boterror.ErrUniqueViolation
+				}
+				return err
+			}
+			return nil
 		}
 		return err
 	}

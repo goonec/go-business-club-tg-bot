@@ -18,3 +18,7 @@ type User interface {
 	GetUser(ctx context.Context, id int64) (*entity.User, error)
 	CreateUser(ctx context.Context, user *entity.User) error
 }
+
+type BusinessCluster interface {
+	GetAllBusinessCluster(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error)
+}
