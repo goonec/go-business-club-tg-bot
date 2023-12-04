@@ -11,6 +11,7 @@ type Resident interface {
 	GetByID(ctx context.Context, id int) (*entity.Resident, error)
 	Create(ctx context.Context, resident *entity.Resident) (int, error)
 	DeleteByID(ctx context.Context, id int) error
+	GetAllByClusterID(ctx context.Context, id int) ([]entity.FIO, error)
 }
 
 type User interface {

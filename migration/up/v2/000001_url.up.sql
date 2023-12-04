@@ -3,7 +3,7 @@ create type role as enum ('user','admin');
 create table if not exists "user"(
     id bigint unique,
     tg_username text unique,
-    create_at timestamp,
+    created_at timestamp,
     role role default 'user',
     primary key (id)
 );
@@ -26,12 +26,6 @@ create table if not exists business_cluster
     primary key (id)
 );
 
-insert into business_cluster (name) values ('1');
-insert into business_cluster (name) values ('2');
-insert into business_cluster (name) values ('3');
-insert into business_cluster (name) values ('4');
-insert into business_cluster (name) values ('5');
-
 create unique index id on business_cluster (name);
 
 create table if not exists business_cluster_resident
@@ -46,4 +40,8 @@ create table if not exists business_cluster_resident
 );
 
 
---select * from "user" where tg_username IN (select tg_username from resident);
+select r.firstname, substring(r.lastname,1,1), substring(r.patronymic,1,1) from resident r
+JOIN business_cluster_resident bcr on bcr.id_resident = r.id
+JOIN business_cluster bc on bc.id = bcr.id_business_cluster
+WHERE bc.id = 2;
+

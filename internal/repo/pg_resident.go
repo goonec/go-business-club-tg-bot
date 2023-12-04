@@ -126,3 +126,39 @@ func (r *residentRepository) DeleteByID(ctx context.Context, id int) error {
 	_, err := r.Pool.Exec(ctx, query, id)
 	return err
 }
+
+func (r *residentRepository) GetAllByClusterID(ctx context.Context, id int) ([]entity.FIO, error) {
+	query := `select r.id, r.firstname, substring(r.lastname,1,1), substring(r.patronymic,1,1) from resident r
+				join business_cluster_resident bcr on bcr.id_resident = r.id
+				join business_cluster bc on bc.id = bcr.id_business_cluster
+				where bc.id = $1`
+
+	rows, err := r.Pool.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	fio := make([]entity.FIO, 0, 128)
+
+	for rows.Next() {
+		var f entity.FIO
+
+		err := rows.Scan(&f.ID,
+			&f.Firstname,
+			&f.Lastname,
+			&f.Patronymic,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		fio = append(fio, f)
+	}
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return fio, nil
+}

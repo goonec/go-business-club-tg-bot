@@ -35,6 +35,15 @@ func (r *residentUsecase) GetAllFIOResident(ctx context.Context, command string)
 	return r.createFIOResidentMarkup(fio, command)
 }
 
+func (r *residentUsecase) GetAllFIOResidentByCluster(ctx context.Context, command string, clusterID int) (*tgbotapi.InlineKeyboardMarkup, error) {
+	fio, err := r.residentRepo.GetAllByClusterID(ctx, clusterID)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.createFIOResidentMarkup(fio, command)
+}
+
 func (r *residentUsecase) GetResident(ctx context.Context, id int) (*entity.Resident, error) {
 	resident, err := r.residentRepo.GetByID(ctx, id)
 	if err != nil {

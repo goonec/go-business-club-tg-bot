@@ -318,7 +318,7 @@ func (v *viewResident) ViewStartButton() tgbot.ViewFunc {
 				tgbotapi.NewInlineKeyboardButtonData("Запустить Chat GPT  🤖️", "chat_gpt")),
 			//tgbotapi.NewInlineKeyboardButtonData("Остановить Chat GPT ⏸", "stop_chat_gpt")),
 			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Список кластеров", "cluster"),
+				tgbotapi.NewInlineKeyboardButtonData("Список кластеров", "allcluster"),
 				tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")))
 
 		msg := tgbotapi.NewMessage(update.FromChat().ID, "<b>Список команд доступных для использования бота</b> ⏩")

@@ -11,6 +11,7 @@ type Resident interface {
 	GetResident(ctx context.Context, id int) (*entity.Resident, error)
 	GetAllFIOResident(ctx context.Context, command string) (*tgbotapi.InlineKeyboardMarkup, error)
 	DeleteResident(ctx context.Context, id int) error
+	GetAllFIOResidentByCluster(ctx context.Context, command string, clusterID int) (*tgbotapi.InlineKeyboardMarkup, error)
 }
 
 type User interface {

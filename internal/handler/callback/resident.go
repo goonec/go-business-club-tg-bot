@@ -145,6 +145,34 @@ func (c *callbackResident) CallbackStartChatGPT() tgbot.ViewFunc {
 	}
 }
 
+func (c *callbackResident) CallbackShowResidentByCluster() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		id := entity.FindID(update.CallbackData())
+		if id == 0 {
+			c.log.Error("entity.FindID == 0")
+			handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectCallbackData))
+		}
+
+		fioMarkup, err := c.residentUsecase.GetAllFIOResidentByCluster(ctx, "", id)
+		if err != nil {
+			c.log.Error("residentUsecase.GetAllFIOResident: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+		}
+
+		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Список резидентов 💼")
+
+		msg.ParseMode = tgbotapi.ModeHTML
+		msg.ReplyMarkup = fioMarkup
+		if _, err := bot.Send(msg); err != nil {
+			c.log.Error("failed to send message: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		return nil
+	}
+}
+
 //func (c *callbackResident) CallbackStopChatGPT() tgbot.ViewFunc {
 //	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 //		msg := tgbotapi.NewMessage(update.FromChat().ID, "Chat GPT остановлен.")

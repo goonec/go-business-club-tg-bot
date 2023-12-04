@@ -67,7 +67,8 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	newBot.RegisterCommandCallback("main_menu", residentCallback.CallbackStartButton())
 
-	newBot.RegisterCommandCallback("cluster", businessClusterCallback.CallbackShowAllBusinessCluster())
+	newBot.RegisterCommandCallback("cluster", residentCallback.CallbackShowResidentByCluster())
+	newBot.RegisterCommandCallback("allcluster", businessClusterCallback.CallbackShowAllBusinessCluster())
 	newBot.RegisterCommandCallback("fiodelete", residentCallback.CallbackDeleteResident())
 	newBot.RegisterCommandCallback("fio", residentCallback.CallbackGetResident())
 
