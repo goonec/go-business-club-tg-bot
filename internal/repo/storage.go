@@ -18,3 +18,12 @@ type User interface {
 	GetByID(ctx context.Context, id int64) (*entity.User, error)
 	GetAllID(ctx context.Context) ([]int64, error)
 }
+
+type BusinessCluster interface {
+	Create(ctx context.Context, name string) error
+	GetByName(ctx context.Context, name string) (*entity.BusinessCluster, error)
+	GetAll(ctx context.Context) ([]entity.BusinessCluster, error)
+}
+
+type BusinessClusterResident interface {
+}

@@ -30,10 +30,10 @@ create unique index id on business_cluster (name);
 
 create table if not exists business_cluster_resident
 (
-    name varchar(200),
+    id varchar(200),
     id_resident int,
-    primary key (name,id_resident),
-    foreign key (name)
+    primary key (id,id_resident),
+    foreign key (id)
         references business_cluster (id),
     foreign key (id_resident)
         references resident (id)
