@@ -45,31 +45,19 @@ func AdminMiddleware(channelID int64, next tgbot.ViewFunc) tgbot.ViewFunc {
 
 var adminConfigMenu = tgbotapi.NewSetMyCommands(
 	tgbotapi.BotCommand{
+		Command:     "/start",
+		Description: "Список всех доступных команд",
+	},
+	tgbotapi.BotCommand{
 		Command:     "/resident_list",
 		Description: "Показать список всех резидентов",
 	},
-	tgbotapi.BotCommand{
-		Command:     "/chat_gpt",
-		Description: "Общение с чатом",
-	},
+	//tgbotapi.BotCommand{
+	//	Command:     "/chat_gpt",
+	//	Description: "Общение с чатом",
+	//},
 	tgbotapi.BotCommand{
 		Command:     "/stop_chat_gpt",
 		Description: "Завершение общения с чатом",
 	},
-	//tgbotapi.BotCommand{
-	//	Command:     "/create_resident_photo",
-	//	Description: "Создание резедента только с фотографей",
-	//},
-	//tgbotapi.BotCommand{
-	//	Command:     "/notify",
-	//	Description: "Создание рассылки всем участникам бота",
-	//},
-	//tgbotapi.BotCommand{
-	//	Command:     "/delete_resident",
-	//	Description: "Удаление резидента",
-	//},
-	//tgbotapi.BotCommand{
-	//	Command:     "/cancel",
-	//	Description: "Используется в случае отмены администраторской команды",
-	//},
 )

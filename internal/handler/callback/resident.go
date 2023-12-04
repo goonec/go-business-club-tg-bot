@@ -115,6 +115,7 @@ func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 				tgbotapi.NewInlineKeyboardButtonData("Запустить Chat GPT  🤖️", "chat_gpt")),
 			//tgbotapi.NewInlineKeyboardButtonData("Остановить Chat GPT ⏸", "stop_chat_gpt")),
 			tgbotapi.NewInlineKeyboardRow(
+				tgbotapi.NewInlineKeyboardButtonData("Список кластеров", "allcluster"),
 				tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")))
 
 		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "<b>Список команд доступных для использования бота</b> ⏩")

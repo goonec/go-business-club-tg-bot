@@ -77,8 +77,8 @@ func (v *viewResident) ViewShowAllResident() tgbot.ViewFunc {
 
 func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "[1] Напишите ФИО и телеграм резидента."+
-			" Должно получиться 4 слова, между которыми есть пробелы.")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "[1] Напишите ФИО, телеграм резидента,и его кластер."+
+			" Должно получиться 5 слов, между которыми есть пробелы.")
 
 		if _, err := bot.Send(msg); err != nil {
 			return err
@@ -102,7 +102,7 @@ func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
 					}
 
 					fioTg := strings.Split(data[0], " ")
-					if len(fioTg) != 4 {
+					if len(fioTg) != 5 {
 						handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectAdminFirstInput))
 						return
 					}
@@ -115,6 +115,9 @@ func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
 					}
 
 					resident := &entity.Resident{
+						BusinessCluster: entity.BusinessCluster{
+							Name: fioTg[4],
+						},
 						FIO: entity.FIO{
 							Firstname:  fioTg[0],
 							Lastname:   fioTg[1],
@@ -124,6 +127,7 @@ func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
 						ResidentData: data[1],
 						PhotoFileID:  data[2],
 					}
+
 					err := v.residentUsecase.CreateResident(context.Background(), resident)
 					if err != nil {
 						v.log.Error("residentUsecase.CreateResident: %v", err)
@@ -152,8 +156,8 @@ func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
 
 func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "[1] Напишите ФИО и телеграм резидента."+
-			" Должно получиться 4 слова, между которыми есть пробелы.")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "[1] Напишите ФИО, телеграм резидента,и его кластер."+
+			" Должно получиться 5 слов, между которыми есть пробелы.")
 
 		if _, err := bot.Send(msg); err != nil {
 			return err
@@ -177,7 +181,7 @@ func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 					}
 
 					fioTg := strings.Split(data[0], " ")
-					if len(fioTg) != 4 {
+					if len(fioTg) != 5 {
 						handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectAdminFirstInput))
 						return
 					}
@@ -191,6 +195,9 @@ func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 					fmt.Println(data)
 
 					resident := &entity.Resident{
+						BusinessCluster: entity.BusinessCluster{
+							Name: fioTg[4],
+						},
 						FIO: entity.FIO{
 							Firstname:  fioTg[0],
 							Lastname:   fioTg[1],
