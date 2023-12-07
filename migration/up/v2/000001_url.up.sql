@@ -1,4 +1,9 @@
-create type role as enum ('user','admin');
+DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'role') THEN
+            CREATE TYPE role AS ENUM ('user', 'admin');
+        END IF;
+    END $$;
 
 create table if not exists "user"(
     id bigint unique,
@@ -38,10 +43,3 @@ create table if not exists business_cluster_resident
     foreign key (id_resident)
         references resident (id) on delete cascade
 );
-
-
-select r.firstname, substring(r.lastname,1,1), substring(r.patronymic,1,1) from resident r
-JOIN business_cluster_resident bcr on bcr.id_resident = r.id
-JOIN business_cluster bc on bc.id = bcr.id_business_cluster
-WHERE bc.id = 2;
-
