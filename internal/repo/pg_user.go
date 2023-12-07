@@ -19,7 +19,7 @@ func NewUserRepository(postgres *postgres.Postgres) User {
 }
 
 func (u *userRepository) Create(ctx context.Context, user *entity.User) error {
-	query := `insert into "user" (id, tg_username, create_at) values ($1,$2,$3)`
+	query := `insert into "user" (id, tg_username, created_at) values ($1,$2,$3)`
 
 	_, err := u.Pool.Exec(ctx, query, user.ID, user.UsernameTG, user.CreatedAt)
 
@@ -27,7 +27,7 @@ func (u *userRepository) Create(ctx context.Context, user *entity.User) error {
 }
 
 func (u *userRepository) GetByID(ctx context.Context, id int64) (*entity.User, error) {
-	query := `select id, tg_username, create_at, role from "user" where id = $1`
+	query := `select id, tg_username, created_at, role from "user" where id = $1`
 	var user entity.User
 
 	err := u.Pool.QueryRow(ctx, query, id).Scan(&user.ID, &user.UsernameTG, &user.CreatedAt, &user.Role)
