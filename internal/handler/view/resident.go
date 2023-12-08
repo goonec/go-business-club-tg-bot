@@ -320,16 +320,8 @@ func (v *viewResident) ViewDeleteResident() tgbot.ViewFunc {
 
 func (v *viewResident) ViewStartButton() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		startMenu := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Запустить Chat GPT  🤖️", "chat_gpt")),
-			//tgbotapi.NewInlineKeyboardButtonData("Остановить Chat GPT ⏸", "stop_chat_gpt")),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Список кластеров", "allcluster"),
-				tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")))
-
 		msg := tgbotapi.NewMessage(update.FromChat().ID, "<b>Список команд доступных для использования бота</b> ⏩")
-		msg.ReplyMarkup = &startMenu
+		msg.ReplyMarkup = &handler.StartMenu
 		msg.ParseMode = tgbotapi.ModeHTML
 
 		if _, err := bot.Send(msg); err != nil {

@@ -33,12 +33,6 @@ func AdminMiddleware(channelID int64, next tgbot.ViewFunc) tgbot.ViewFunc {
 				return next(ctx, bot, update)
 			}
 		}
-
-		//if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID,
-		//	"У вас нет прав на выполнение этой команды.")); err != nil {
-		//	return err
-		//}
-
 		return boterror.ErrIsNotAdmin
 	}
 }
@@ -52,10 +46,6 @@ var adminConfigMenu = tgbotapi.NewSetMyCommands(
 		Command:     "/resident_list",
 		Description: "Показать список всех резидентов",
 	},
-	//tgbotapi.BotCommand{
-	//	Command:     "/chat_gpt",
-	//	Description: "Общение с чатом",
-	//},
 	tgbotapi.BotCommand{
 		Command:     "/stop_chat_gpt",
 		Description: "Завершение общения с чатом",

@@ -110,18 +110,11 @@ func (c *callbackResident) CallbackShowAllResident() tgbot.ViewFunc {
 
 func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		startMenu := tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Запустить Chat GPT  🤖️", "chat_gpt")),
-			//tgbotapi.NewInlineKeyboardButtonData("Остановить Chat GPT ⏸", "stop_chat_gpt")),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData("Список кластеров", "allcluster"),
-				tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")))
 
 		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "<b>Список команд доступных для использования бота</b> ⏩")
 
 		msg.ParseMode = tgbotapi.ModeHTML
-		msg.ReplyMarkup = &startMenu
+		msg.ReplyMarkup = &handler.StartMenu
 		if _, err := bot.Send(msg); err != nil {
 			c.log.Error("failed to send message: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
@@ -173,15 +166,3 @@ func (c *callbackResident) CallbackShowResidentByCluster() tgbot.ViewFunc {
 		return nil
 	}
 }
-
-//func (c *callbackResident) CallbackStopChatGPT() tgbot.ViewFunc {
-//	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-//		msg := tgbotapi.NewMessage(update.FromChat().ID, "Chat GPT остановлен.")
-//		if _, err := bot.Send(msg); err != nil {
-//			c.log.Error("failed to send message: %v", err)
-//			handler.HandleError(bot, update, boterror.ParseErrToText(err))
-//			return nil
-//		}
-//		return nil
-//	}
-//}

@@ -169,10 +169,10 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 	}()
 
 	// Middleware для всех комманд
-	err := b.middleware(update)
-	if err != nil {
-		return
-	}
+	//err := b.middleware(update)
+	//if err != nil {
+	//	return
+	//}
 
 	// Если пришло сообщение
 	if update.Message != nil {
