@@ -36,27 +36,33 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	transportCh := make(chan map[int64]map[string][]string, 1)
 	transportСhResident := make(chan map[int64]map[string][]string, 1)
+	transportСhSchedule := make(chan map[int64]map[string][]string, 1)
 
 	residentRepo := repo.NewResidentRepository(psql)
 	userRepo := repo.NewUserRepository(psql)
 	businessClusterRepo := repo.NewBusinessClusterRepository(psql)
 	businessClusterResidentRepo := repo.NewBusinessClusterResidentRepository(psql)
+	scheduleRepo := repo.NewScheduleRepo(psql)
 
 	residentUsecase := usecase.NewResidentUsecase(residentRepo, businessClusterRepo, businessClusterResidentRepo)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 	businessClusterUsecase := usecase.NewBusinessClusterUsecase(businessClusterRepo)
+	scheduleUsecase := usecase.NewScheduleUsecase(scheduleRepo)
 
 	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh, transportСhResident)
+	scheduleView := view.NewViewSchedule(scheduleUsecase, log, transportСhSchedule)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log)
 	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, log)
+	scheduleCallback := callback.NewCallbackSchedule(scheduleUsecase, log)
 
-	newBot := tgbot.NewBot(bot, log, openaiRequest, userUsecase, transportCh, transportСhResident, cfg.Chat.ChatID)
+	newBot := tgbot.NewBot(bot, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, cfg.Chat.ChatID)
 	newBot.RegisterCommandView("admin", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewAdminCommand()))
 	newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResident()))
 	newBot.RegisterCommandView("create_resident_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResidentPhoto()))
 	newBot.RegisterCommandView("notify", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateNotify()))
 	newBot.RegisterCommandView("delete_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewDeleteResident()))
+	newBot.RegisterCommandView("create_schedule", middleware.AdminMiddleware(cfg.Chat.ChatID, scheduleView.ViewCreateSchedule()))
 
 	newBot.RegisterCommandView("start", residentView.ViewStartButton())
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
@@ -64,6 +70,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	//newBot.RegisterCommandCallback("stop_chat_gpt", residentCallback.CallbackStopChatGPT())
 	newBot.RegisterCommandCallback("resident", residentCallback.CallbackShowAllResident())
 	newBot.RegisterCommandCallback("chat_gpt", residentCallback.CallbackStartChatGPT())
+	newBot.RegisterCommandCallback("schedule", scheduleCallback.CallbackGetSchedule())
 
 	newBot.RegisterCommandCallback("main_menu", residentCallback.CallbackStartButton())
 

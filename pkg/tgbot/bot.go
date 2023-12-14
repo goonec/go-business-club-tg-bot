@@ -30,6 +30,7 @@ type Bot struct {
 	stateStore          map[int64]map[string][]string
 	transportCh         chan map[int64]map[string][]string
 	transportChResident chan map[int64]map[string][]string
+	transportChSchedule chan map[int64]map[string][]string
 
 	mu sync.RWMutex
 }
@@ -77,6 +78,7 @@ func NewBot(api *tgbotapi.BotAPI,
 	userUsecase usecase.User,
 	transportCh chan map[int64]map[string][]string,
 	transportChResident chan map[int64]map[string][]string,
+	transportChSchedule chan map[int64]map[string][]string,
 	channelID int64) *Bot {
 	return &Bot{
 		api:                 api,
@@ -85,6 +87,7 @@ func NewBot(api *tgbotapi.BotAPI,
 		userUsecase:         userUsecase,
 		transportCh:         transportCh,
 		transportChResident: transportChResident,
+		transportChSchedule: transportChSchedule,
 		channelID:           channelID,
 	}
 }
@@ -328,6 +331,12 @@ func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
 			return errors.New("not found in map"), nil
 		}
 		return nil, callbackView
+	case strings.HasPrefix(callbackData, "schedule"):
+		callbackView, ok := b.callbackView["schedule"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
 	}
 
 	return nil, nil
@@ -365,6 +374,15 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 		return true
 	}
 
+	if text == "/create_schedule" {
+		_, ok := b.read(userID)
+		if !ok {
+			b.stateStore[userID] = make(map[string][]string)
+			b.stateStore[userID]["/create_schedule"] = []string{}
+		}
+		return true
+	}
+
 	//if text == "/chat_gpt" {
 	//	_, ok := b.read(userID)
 	//	if !ok {
@@ -393,6 +411,28 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 	if ok {
 		for key, value := range s {
 			switch key {
+			case "/create_schedule":
+				photo := update.Message.Photo
+				if len(photo) > 0 {
+					largestPhoto := photo[len(photo)-1]
+
+					fileID := largestPhoto.FileID
+					b.set(fileID, key, userID)
+				} else {
+					b.delete(userID)
+
+					msg := tgbotapi.NewMessage(userID, "Не является изображением [1].")
+					if _, err := b.api.Send(msg); err != nil {
+						b.log.Error("failed to send message: %v", err)
+					}
+					return false
+				}
+
+				d, _ := b.read(userID)
+				b.transportChSchedule <- map[int64]map[string][]string{userID: d}
+
+				b.delete(userID)
+				return false
 			case "/notify":
 				switch {
 				case len(value) == 0:

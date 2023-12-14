@@ -29,3 +29,8 @@ type BusinessCluster interface {
 type BusinessClusterResident interface {
 	Create(ctx context.Context, IDBusinessCluster int, IDResident int) error
 }
+
+type Schedule interface {
+	Create(ctx context.Context, file string) error
+	Get(ctx context.Context) (*entity.Schedule, error)
+}

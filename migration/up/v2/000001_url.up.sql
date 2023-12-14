@@ -43,3 +43,10 @@ create table if not exists business_cluster_resident
     foreign key (id_resident)
         references resident (id) on delete cascade
 );
+
+create table if not exists schedule(
+    id int generated always as identity,
+    photo_file_id varchar(150) null,
+    created_at timestamp default current_timestamp not null,
+    primary key (id)
+);

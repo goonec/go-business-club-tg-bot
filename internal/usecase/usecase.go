@@ -23,3 +23,8 @@ type User interface {
 type BusinessCluster interface {
 	GetAllBusinessCluster(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error)
 }
+
+type Schedule interface {
+	CreateSchedule(ctx context.Context, file string) error
+	GetSchedule(ctx context.Context) (*entity.Schedule, error)
+}
