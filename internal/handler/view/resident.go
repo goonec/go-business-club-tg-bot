@@ -159,8 +159,8 @@ func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
 
 func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "[1] Напишите ФИО, телеграм резидента,и его кластер."+
-			" Должно получиться 5 слов, между которыми есть пробелы.")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "[1] Напишите Фамилию и Имя."+
+			" Должно получиться 2 слова, между которыми есть пробелы.")
 
 		if _, err := bot.Send(msg); err != nil {
 			return err
