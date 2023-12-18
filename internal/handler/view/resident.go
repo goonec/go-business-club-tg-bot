@@ -184,29 +184,30 @@ func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 					}
 
 					fioTg := strings.Split(data[0], " ")
-					if len(fioTg) != 5 {
+
+					if len(fioTg) != 2 {
+						v.log.Error("strings.Split: %v", boterror.ErrIncorrectAdminFirstInput)
 						handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectAdminFirstInput))
 						return
 					}
 
-					errStr := entity.IsFIOValid(fioTg[0], fioTg[1], fioTg[2])
+					errStr := entity.IsFIValid(fioTg[0], fioTg[1])
 					if len(errStr) != 0 {
 						v.log.Error("entity.IsFIOValid: %v", errStr)
 						handler.HandleError(bot, update, errStr)
 						return
 					}
-					fmt.Println(data)
 
 					resident := &entity.Resident{
-						BusinessCluster: entity.BusinessCluster{
-							Name: fioTg[4],
-						},
+						//BusinessCluster: entity.BusinessCluster{
+						//	Name: fioTg[4],
+						//},
 						FIO: entity.FIO{
-							Firstname:  fioTg[0],
-							Lastname:   fioTg[1],
-							Patronymic: fioTg[2],
+							Firstname: fioTg[0],
+							Lastname:  fioTg[1],
+							//Patronymic: fioTg[2],
 						},
-						UsernameTG:  fioTg[3],
+						//UsernameTG:  fioTg[3],
 						PhotoFileID: data[1],
 					}
 

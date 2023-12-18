@@ -69,25 +69,10 @@ func (r *residentUsecase) CreateResident(ctx context.Context, resident *entity.R
 		return err
 	}
 
-	fn := func(businessClusterID, residentID int) error {
-		err := r.businessClusterResidentRepo.Create(context.Background(), businessClusterID, residentID)
-		if err != nil {
-			errCode := repo.ErrorCode(err)
-			if errCode == repo.ForeignKeyViolation {
-				return boterror.ErrForeignKeyViolation
-			}
-			if errCode == repo.UniqueViolation {
-				return boterror.ErrUniqueViolation
-			}
-			return err
-		}
-		return nil
-	}
-
-	businessCluster, err := r.businessClusterRepo.GetByName(ctx, resident.BusinessCluster.Name)
-	if err != nil {
-		if errors.Is(err, boterror.ErrNotFound) {
-			businessClusterID, err := r.businessClusterRepo.Create(ctx, resident.BusinessCluster.Name)
+	bc := entity.BusinessCluster{}
+	if resident.BusinessCluster == bc {
+		fn := func(businessClusterID, residentID int) error {
+			err := r.businessClusterResidentRepo.Create(context.Background(), businessClusterID, residentID)
 			if err != nil {
 				errCode := repo.ErrorCode(err)
 				if errCode == repo.ForeignKeyViolation {
@@ -98,19 +83,37 @@ func (r *residentUsecase) CreateResident(ctx context.Context, resident *entity.R
 				}
 				return err
 			}
-			err = fn(businessClusterID, residentID)
-			if err != nil {
-				return err
-			}
-
 			return nil
 		}
-		return err
-	}
 
-	err = fn(businessCluster.ID, residentID)
-	if err != nil {
-		return err
+		businessCluster, err := r.businessClusterRepo.GetByName(ctx, resident.BusinessCluster.Name)
+		if err != nil {
+			if errors.Is(err, boterror.ErrNotFound) {
+				businessClusterID, err := r.businessClusterRepo.Create(ctx, resident.BusinessCluster.Name)
+				if err != nil {
+					errCode := repo.ErrorCode(err)
+					if errCode == repo.ForeignKeyViolation {
+						return boterror.ErrForeignKeyViolation
+					}
+					if errCode == repo.UniqueViolation {
+						return boterror.ErrUniqueViolation
+					}
+					return err
+				}
+				err = fn(businessClusterID, residentID)
+				if err != nil {
+					return err
+				}
+
+				return nil
+			}
+			return err
+		}
+
+		err = fn(businessCluster.ID, residentID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -132,7 +135,7 @@ func (r *residentUsecase) createFIOResidentMarkup(fio []entity.FIO, command stri
 	buttonsPerRow := 3
 
 	for i, el := range fio {
-		button := tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%s %s.%s.", el.Firstname, el.Lastname, el.Patronymic),
+		button := tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%s %s.", el.Firstname, el.Lastname),
 			fmt.Sprintf("fio%s_%d", command, el.ID))
 
 		row = append(row, button)

@@ -58,3 +58,18 @@ func IsFIOValid(f, l, p string) string {
 
 	return validInfo
 }
+
+func IsFIValid(f, l string) string {
+	var err []string
+
+	if !fioRegex.MatchString(f) {
+		err = append(err, "Некорректно введено имя. ")
+	}
+	if !fioRegex.MatchString(l) {
+		err = append(err, "Некорректно введена фамилия. ")
+	}
+
+	validInfo := strings.Join(err, "")
+
+	return validInfo
+}
