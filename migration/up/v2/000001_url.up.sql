@@ -15,10 +15,10 @@ create table if not exists "user"(
 
 create table if not exists resident(
     id int generated always as identity,
-    tg_username text unique not null,
+    tg_username text null,
     firstname varchar(50) not null,
     lastname varchar(50) not null,
-    patronymic varchar(50) not null,
+    patronymic varchar(50) null,
     resident_data text null,
     photo_file_id varchar(150) null,
     primary key (id)

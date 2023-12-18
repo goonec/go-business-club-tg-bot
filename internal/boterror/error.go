@@ -44,7 +44,7 @@ func ParseErrToText(err error) string {
 	case errors.Is(err, ErrIncorrectAdminFirstInputPhoto):
 		return "Должно быть введено 2 слова при первом вводе [1]"
 	case errors.Is(err, ErrUniqueViolation):
-		return "Телеграм пользователя должен быть уникальным [1]"
+		return "Определенные значения должны быть уникальными"
 	case errors.Is(err, ErrForeignKeyViolation):
 		return "TODO: Что-то с внешнеим ключом"
 	case errors.Is(err, ErrIsNotAdmin):

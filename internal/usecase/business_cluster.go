@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/internal/repo"
 )
@@ -16,6 +17,22 @@ func NewBusinessClusterUsecase(businessClusterRepo repo.BusinessCluster) Busines
 	return &businessClusterUsecase{
 		businessClusterRepo: businessClusterRepo,
 	}
+}
+
+func (b *businessClusterUsecase) Create(ctx context.Context, cluster string) error {
+	_, err := b.businessClusterRepo.Create(ctx, cluster)
+	if err != nil {
+		errCode := repo.ErrorCode(err)
+		if errCode == repo.ForeignKeyViolation {
+			return boterror.ErrForeignKeyViolation
+		}
+		if errCode == repo.UniqueViolation {
+			return boterror.ErrUniqueViolation
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (b *businessClusterUsecase) GetAllBusinessCluster(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error) {

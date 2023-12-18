@@ -313,7 +313,6 @@ func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
 			b.stateStore[update.CallbackQuery.Message.Chat.ID] = make(map[string][]string)
 			b.stateStore[update.CallbackQuery.Message.Chat.ID]["chat_gpt"] = []string{}
 		}
-
 		callbackView, ok := b.callbackView["chat_gpt"]
 		if !ok {
 			return errors.New("not found in map"), nil
@@ -342,46 +341,104 @@ func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
 	return nil, nil
 }
 
-func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
-	userID := update.Message.Chat.ID
-	text := update.Message.Text
-
-	if text == "/cancel" {
+func (b *Bot) IsCommandText(text string, userID int64) *bool {
+	switch text {
+	case "/cancel":
 		b.cancelMessageWithState(userID)
-		return false
-	}
-
-	if text == "/stop_chat_gpt" {
+		return &[]bool{false}[0]
+	case "/stop_chat_gpt":
 		b.cancelChatGptDialog(userID)
-		return false
-	}
-
-	if text == "/create_resident" {
+		return &[]bool{false}[0]
+	case "/create_resident":
 		_, ok := b.read(userID)
 		if !ok {
 			b.stateStore[userID] = make(map[string][]string)
 			b.stateStore[userID]["/create_resident"] = []string{}
 		}
-		return true
-	}
-
-	if text == "/create_resident_photo" {
+		return &[]bool{true}[0]
+	case "/create_resident_photo":
 		_, ok := b.read(userID)
 		if !ok {
 			b.stateStore[userID] = make(map[string][]string)
 			b.stateStore[userID]["/create_resident_photo"] = []string{}
 		}
-		return true
-	}
-
-	if text == "/create_schedule" {
+		return &[]bool{true}[0]
+	case "/create_schedule":
 		_, ok := b.read(userID)
 		if !ok {
 			b.stateStore[userID] = make(map[string][]string)
 			b.stateStore[userID]["/create_schedule"] = []string{}
 		}
-		return true
+		return &[]bool{true}[0]
+	case "/notify":
+		_, ok := b.read(userID)
+		if !ok {
+			b.stateStore[userID] = make(map[string][]string)
+			b.stateStore[userID]["/notify"] = []string{}
+		}
+		return &[]bool{true}[0]
+	//case "/chat_gpt":
+	//	_, ok := b.read(userID)
+	//	if !ok {
+	//		b.stateStore[userID] = make(map[string][]string)
+	//		b.stateStore[userID]["/chat_gpt"] = []string{}
+	//	}
+	//
+	//	//msg := tgbotapi.NewMessage(userID, "Начните общение с Chat GPT!  💬\nЕсли вы хотите остановить чат и воспользоваться другими командами "+
+	//	//	"используейте - /stop_chat_gpt")
+	//	//if _, err := b.api.Send(msg); err != nil {
+	//	//	b.log.Error("failed to send message: %v", err)
+	//	//}
+	//	return false
+	default:
+		return nil
 	}
+}
+
+func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
+	userID := update.Message.Chat.ID
+	text := update.Message.Text
+
+	isText := b.IsCommandText(text, userID)
+	if isText != nil {
+		return *isText
+	}
+	//if text == "/cancel" {
+	//	b.cancelMessageWithState(userID)
+	//	return false
+	//}
+	//
+	//if text == "/stop_chat_gpt" {
+	//	b.cancelChatGptDialog(userID)
+	//	return false
+	//}
+	//
+	//if text == "/create_resident" {
+	//	_, ok := b.read(userID)
+	//	if !ok {
+	//		b.stateStore[userID] = make(map[string][]string)
+	//		b.stateStore[userID]["/create_resident"] = []string{}
+	//	}
+	//	return true
+	//}
+	//
+	//if text == "/create_resident_photo" {
+	//	_, ok := b.read(userID)
+	//	if !ok {
+	//		b.stateStore[userID] = make(map[string][]string)
+	//		b.stateStore[userID]["/create_resident_photo"] = []string{}
+	//	}
+	//	return true
+	//}
+	//
+	//if text == "/create_schedule" {
+	//	_, ok := b.read(userID)
+	//	if !ok {
+	//		b.stateStore[userID] = make(map[string][]string)
+	//		b.stateStore[userID]["/create_schedule"] = []string{}
+	//	}
+	//	return true
+	//}
 
 	//if text == "/chat_gpt" {
 	//	_, ok := b.read(userID)
@@ -398,14 +455,14 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 	//	return false
 	//}
 
-	if text == "/notify" {
-		_, ok := b.read(userID)
-		if !ok {
-			b.stateStore[userID] = make(map[string][]string)
-			b.stateStore[userID]["/notify"] = []string{}
-		}
-		return true
-	}
+	//if text == "/notify" {
+	//	_, ok := b.read(userID)
+	//	if !ok {
+	//		b.stateStore[userID] = make(map[string][]string)
+	//		b.stateStore[userID]["/notify"] = []string{}
+	//	}
+	//	return true
+	//}
 
 	s, ok := b.read(userID)
 	if ok {

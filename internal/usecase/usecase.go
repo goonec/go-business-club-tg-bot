@@ -21,6 +21,7 @@ type User interface {
 }
 
 type BusinessCluster interface {
+	Create(ctx context.Context, cluster string) error
 	GetAllBusinessCluster(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error)
 }
 
