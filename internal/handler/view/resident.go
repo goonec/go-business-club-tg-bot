@@ -186,8 +186,8 @@ func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 					fioTg := strings.Split(data[0], " ")
 
 					if len(fioTg) != 2 {
-						v.log.Error("strings.Split: %v", boterror.ErrIncorrectAdminFirstInput)
-						handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectAdminFirstInput))
+						v.log.Error("strings.Split: %v", boterror.ErrIncorrectAdminFirstInputPhoto)
+						handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectAdminFirstInputPhoto))
 						return
 					}
 

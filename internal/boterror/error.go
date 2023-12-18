@@ -7,14 +7,15 @@ import (
 )
 
 var (
-	ErrNotFound                 = NewError("Resident not found", errors.New("not_found"))
-	ErrIncorrectCallbackData    = NewError("Incorrect Callback Data", errors.New("incorrect_callback"))
-	ErrIncorrectAdminFirstInput = NewError("Must be 5 input values", errors.New("incorrect_input"))
-	ErrUniqueViolation          = NewError("Violation must be unique", errors.New("non_unique_value"))
-	ErrForeignKeyViolation      = NewError("Foreign Key Violation", errors.New("foreign_key_violation "))
-	ErrIsNotAdmin               = NewError("The user is not an admin", errors.New("not_admin"))
-	ErrUserNotMember            = NewError("User not member", errors.New("user_not_member"))
-	ErrInternalError            = NewError("Internal error", errors.New("internal_error"))
+	ErrNotFound                      = NewError("Resident not found", errors.New("not_found"))
+	ErrIncorrectCallbackData         = NewError("Incorrect Callback Data", errors.New("incorrect_callback"))
+	ErrIncorrectAdminFirstInput      = NewError("Must be 5 input values", errors.New("incorrect_input"))
+	ErrIncorrectAdminFirstInputPhoto = NewError("Must be 2 input values", errors.New("incorrect_input"))
+	ErrUniqueViolation               = NewError("Violation must be unique", errors.New("non_unique_value"))
+	ErrForeignKeyViolation           = NewError("Foreign Key Violation", errors.New("foreign_key_violation "))
+	ErrIsNotAdmin                    = NewError("The user is not an admin", errors.New("not_admin"))
+	ErrUserNotMember                 = NewError("User not member", errors.New("user_not_member"))
+	ErrInternalError                 = NewError("Internal error", errors.New("internal_error"))
 )
 
 type BotError struct {
@@ -40,6 +41,8 @@ func ParseErrToText(err error) string {
 		return "Резидент не был найден"
 	case errors.Is(err, ErrIncorrectAdminFirstInput):
 		return "Должно быть введено минимум 5 слов при первом вводе [1]"
+	case errors.Is(err, ErrIncorrectAdminFirstInputPhoto):
+		return "Должно быть введено 2 слова при первом вводе [1]"
 	case errors.Is(err, ErrUniqueViolation):
 		return "Телеграм пользователя должен быть уникальным [1]"
 	case errors.Is(err, ErrForeignKeyViolation):
