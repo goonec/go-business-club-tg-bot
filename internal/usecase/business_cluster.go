@@ -10,13 +10,31 @@ import (
 )
 
 type businessClusterUsecase struct {
-	businessClusterRepo repo.BusinessCluster
+	businessClusterRepo         repo.BusinessCluster
+	businessClusterResidentRepo repo.BusinessClusterResident
 }
 
-func NewBusinessClusterUsecase(businessClusterRepo repo.BusinessCluster) BusinessCluster {
+func NewBusinessClusterUsecase(businessClusterRepo repo.BusinessCluster, businessClusterResidentRepo repo.BusinessClusterResident) BusinessCluster {
 	return &businessClusterUsecase{
-		businessClusterRepo: businessClusterRepo,
+		businessClusterRepo:         businessClusterRepo,
+		businessClusterResidentRepo: businessClusterResidentRepo,
 	}
+}
+
+func (b *businessClusterUsecase) CreateClusterResident(ctx context.Context, idBusinessCluster int, idResident int) error {
+	err := b.businessClusterResidentRepo.Create(ctx, idBusinessCluster, idResident)
+	if err != nil {
+		errCode := repo.ErrorCode(err)
+		if errCode == repo.ForeignKeyViolation {
+			return boterror.ErrForeignKeyViolation
+		}
+		if errCode == repo.UniqueViolation {
+			return boterror.ErrUniqueViolation
+		}
+		return err
+	}
+
+	return nil
 }
 
 func (b *businessClusterUsecase) Create(ctx context.Context, cluster string) error {
@@ -35,16 +53,16 @@ func (b *businessClusterUsecase) Create(ctx context.Context, cluster string) err
 	return nil
 }
 
-func (b *businessClusterUsecase) GetAllBusinessCluster(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error) {
+func (b *businessClusterUsecase) GetAllBusinessCluster(ctx context.Context, callbackCommand string) (*tgbotapi.InlineKeyboardMarkup, error) {
 	businessCluster, err := b.businessClusterRepo.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return b.createBusinessClusterMarkup(businessCluster)
+	return b.createBusinessClusterMarkup(businessCluster, callbackCommand)
 }
 
-func (b *businessClusterUsecase) createBusinessClusterMarkup(businessCluster []entity.BusinessCluster) (*tgbotapi.InlineKeyboardMarkup, error) {
+func (b *businessClusterUsecase) createBusinessClusterMarkup(businessCluster []entity.BusinessCluster, callbackCommand string) (*tgbotapi.InlineKeyboardMarkup, error) {
 	var rows [][]tgbotapi.InlineKeyboardButton
 	var row []tgbotapi.InlineKeyboardButton
 
@@ -52,7 +70,7 @@ func (b *businessClusterUsecase) createBusinessClusterMarkup(businessCluster []e
 
 	for i, el := range businessCluster {
 		button := tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%s", el.Name),
-			fmt.Sprintf("cluster_%d", el.ID))
+			fmt.Sprintf("%s%d", callbackCommand, el.ID))
 
 		row = append(row, button)
 
@@ -61,8 +79,11 @@ func (b *businessClusterUsecase) createBusinessClusterMarkup(businessCluster []e
 			row = []tgbotapi.InlineKeyboardButton{}
 		}
 	}
-	mainMenuButton := tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
-	rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
+
+	if callbackCommand == "cluster_" {
+		mainMenuButton := tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
+		rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
+	}
 
 	markup := tgbotapi.NewInlineKeyboardMarkup(rows...)
 

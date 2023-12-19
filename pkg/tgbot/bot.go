@@ -245,11 +245,6 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			if err == boterror.ErrIsNotAdmin {
 				b.delete(update.Message.Chat.ID)
 			}
-
-			//msg := tgbotapi.NewMessage(update.Message.Chat.ID, boterror.ParseErrToText(err))
-			//if _, err := b.api.Send(msg); err != nil {
-			//	b.log.Error("failed to send message: %v", err)
-			//}
 			return
 		}
 		// Если нажали на кнопку
@@ -257,7 +252,6 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 		b.log.Info("[%s] %s", update.CallbackQuery.From.UserName, update.CallbackData())
 
 		var callback ViewFunc
-		//callbackData := update.CallbackData()
 
 		err, callbackView := b.callbackHasString(update)
 		if err != nil {
@@ -336,6 +330,18 @@ func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
 			return errors.New("not found in map"), nil
 		}
 		return nil, callbackView
+	case strings.HasPrefix(callbackData, "getcluster_"):
+		callbackView, ok := b.callbackView["getcluster"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
+	case strings.HasPrefix(callbackData, "fiogetresident_"):
+		callbackView, ok := b.callbackView["fiogetresident"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
 	}
 
 	return nil, nil
@@ -403,66 +409,6 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 	if isText != nil {
 		return *isText
 	}
-	//if text == "/cancel" {
-	//	b.cancelMessageWithState(userID)
-	//	return false
-	//}
-	//
-	//if text == "/stop_chat_gpt" {
-	//	b.cancelChatGptDialog(userID)
-	//	return false
-	//}
-	//
-	//if text == "/create_resident" {
-	//	_, ok := b.read(userID)
-	//	if !ok {
-	//		b.stateStore[userID] = make(map[string][]string)
-	//		b.stateStore[userID]["/create_resident"] = []string{}
-	//	}
-	//	return true
-	//}
-	//
-	//if text == "/create_resident_photo" {
-	//	_, ok := b.read(userID)
-	//	if !ok {
-	//		b.stateStore[userID] = make(map[string][]string)
-	//		b.stateStore[userID]["/create_resident_photo"] = []string{}
-	//	}
-	//	return true
-	//}
-	//
-	//if text == "/create_schedule" {
-	//	_, ok := b.read(userID)
-	//	if !ok {
-	//		b.stateStore[userID] = make(map[string][]string)
-	//		b.stateStore[userID]["/create_schedule"] = []string{}
-	//	}
-	//	return true
-	//}
-
-	//if text == "/chat_gpt" {
-	//	_, ok := b.read(userID)
-	//	if !ok {
-	//		b.stateStore[userID] = make(map[string][]string)
-	//		b.stateStore[userID]["/chat_gpt"] = []string{}
-	//	}
-	//
-	//	//msg := tgbotapi.NewMessage(userID, "Начните общение с Chat GPT!  💬\nЕсли вы хотите остановить чат и воспользоваться другими командами "+
-	//	//	"используейте - /stop_chat_gpt")
-	//	//if _, err := b.api.Send(msg); err != nil {
-	//	//	b.log.Error("failed to send message: %v", err)
-	//	//}
-	//	return false
-	//}
-
-	//if text == "/notify" {
-	//	_, ok := b.read(userID)
-	//	if !ok {
-	//		b.stateStore[userID] = make(map[string][]string)
-	//		b.stateStore[userID]["/notify"] = []string{}
-	//	}
-	//	return true
-	//}
 
 	s, ok := b.read(userID)
 	if ok {

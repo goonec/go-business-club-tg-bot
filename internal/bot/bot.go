@@ -9,6 +9,7 @@ import (
 	"github.com/goonec/business-tg-bot/internal/handler/view"
 	"github.com/goonec/business-tg-bot/internal/repo"
 	"github.com/goonec/business-tg-bot/internal/usecase"
+	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/openai"
 	"github.com/goonec/business-tg-bot/pkg/postgres"
@@ -32,6 +33,8 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	log.Info("Authorized on account %s", bot.Self.UserName)
 
+	store := localstore.NewStore()
+
 	openaiRequest := openai.NewOpenAIConnect(cfg.OpenAI.Token)
 
 	transportCh := make(chan map[int64]map[string][]string, 1)
@@ -46,15 +49,15 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	residentUsecase := usecase.NewResidentUsecase(residentRepo, businessClusterRepo, businessClusterResidentRepo)
 	userUsecase := usecase.NewUserUsecase(userRepo)
-	businessClusterUsecase := usecase.NewBusinessClusterUsecase(businessClusterRepo)
+	businessClusterUsecase := usecase.NewBusinessClusterUsecase(businessClusterRepo, businessClusterResidentRepo)
 	scheduleUsecase := usecase.NewScheduleUsecase(scheduleRepo)
 
 	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh, transportСhResident)
 	scheduleView := view.NewViewSchedule(scheduleUsecase, log, transportСhSchedule)
 	clusterView := view.NewViewCluster(businessClusterUsecase, log)
 
-	residentCallback := callback.NewCallbackResident(residentUsecase, log)
-	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, log)
+	residentCallback := callback.NewCallbackResident(residentUsecase, log, store)
+	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, residentUsecase, log, store)
 	scheduleCallback := callback.NewCallbackSchedule(scheduleUsecase, log)
 
 	newBot := tgbot.NewBot(bot, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, cfg.Chat.ChatID)
@@ -68,6 +71,10 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	newBot.RegisterCommandView("start", residentView.ViewStartButton())
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
+
+	newBot.RegisterCommandView("add_cluster_to_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewShowAllBusinessCluster()))
+	newBot.RegisterCommandCallback("getcluster", businessClusterCallback.CallbackGetIDCluster())
+	newBot.RegisterCommandCallback("fiogetresident", businessClusterCallback.CallbackCreateClusterResident())
 
 	//newBot.RegisterCommandCallback("stop_chat_gpt", residentCallback.CallbackStopChatGPT())
 	newBot.RegisterCommandCallback("resident", residentCallback.CallbackShowAllResident())

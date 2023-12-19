@@ -21,8 +21,9 @@ type User interface {
 }
 
 type BusinessCluster interface {
+	CreateClusterResident(ctx context.Context, idBusinessCluster int, idResident int) error
 	Create(ctx context.Context, cluster string) error
-	GetAllBusinessCluster(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error)
+	GetAllBusinessCluster(ctx context.Context, callbackCommand string) (*tgbotapi.InlineKeyboardMarkup, error)
 }
 
 type Schedule interface {

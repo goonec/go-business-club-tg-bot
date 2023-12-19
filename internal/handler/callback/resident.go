@@ -8,6 +8,7 @@ import (
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/internal/handler"
 	"github.com/goonec/business-tg-bot/internal/usecase"
+	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/tgbot"
 )
@@ -15,12 +16,15 @@ import (
 type callbackResident struct {
 	residentUsecase usecase.Resident
 	log             *logger.Logger
+
+	store *localstore.Store
 }
 
-func NewCallbackResident(residentUsecase usecase.Resident, log *logger.Logger) *callbackResident {
+func NewCallbackResident(residentUsecase usecase.Resident, log *logger.Logger, store *localstore.Store) *callbackResident {
 	return &callbackResident{
 		residentUsecase: residentUsecase,
 		log:             log,
+		store:           store,
 	}
 }
 
