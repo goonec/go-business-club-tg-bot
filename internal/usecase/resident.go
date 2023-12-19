@@ -145,8 +145,11 @@ func (r *residentUsecase) createFIOResidentMarkup(fio []entity.FIO, command stri
 			row = []tgbotapi.InlineKeyboardButton{}
 		}
 	}
-	mainMenuButton := tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
-	rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
+
+	if command != "fiogetresident" {
+		mainMenuButton := tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
+		rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
+	}
 
 	markup := tgbotapi.NewInlineKeyboardMarkup(rows...)
 

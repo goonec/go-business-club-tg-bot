@@ -46,7 +46,14 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 			"/notify - создание рассылки всем участникам бота\n" +
 			"/cancel - используется в случае отмены администраторской команды\n" +
 			"/delete_resident - удаление резидента\n" +
-			"/create_schedule - создание расписания ")
+			"/create_schedule - создание расписания\n" +
+			"/create_cluster - создать кластер\n" +
+			"Шаблон по созданию кластера:\n" +
+			"/create_cluster\n" +
+			"{\n" +
+			`"cluster":"Введите название кластера"` +
+			"\n}\n" +
+			"/add_cluster_to_resident - назначить кластер резеденту")
 		msg := tgbotapi.NewMessage(update.FromChat().ID, text)
 
 		if _, err := bot.Send(msg); err != nil {

@@ -69,6 +69,8 @@ func (c *callbackBusinessCluster) CallbackGetIDCluster() tgbot.ViewFunc {
 
 			fioMarkup, err := c.residentUsecase.GetAllFIOResident(ctx, "getresident")
 			if err != nil {
+				c.store.Delete(userID)
+
 				c.log.Error("residentUsecase.GetAllFIOResident: %v", err)
 				handler.HandleError(bot, update, boterror.ParseErrToText(err))
 			}
@@ -79,25 +81,12 @@ func (c *callbackBusinessCluster) CallbackGetIDCluster() tgbot.ViewFunc {
 			msg.ReplyMarkup = fioMarkup
 
 			if _, err := bot.Send(msg); err != nil {
+				c.store.Delete(userID)
 				return err
 			}
 
 			return nil
 		}
-
-		//data = append(data, id)
-		//err := c.businessCluster.CreateClusterResident(ctx, data[0].(int), data[1].(int)) //TODO переделать
-		//if err != nil {
-		//	c.log.Error("businessCluster.CreateClusterResident: %v", err)
-		//	handler.HandleError(bot, update, boterror.ParseErrToText(err))
-		//	return nil
-		//}
-		//
-		//msg := tgbotapi.NewMessage(update.FromChat().ID, `Кластер назначен резеденту`)
-		//
-		//if _, err := bot.Send(msg); err != nil {
-		//	return err
-		//}
 
 		return nil
 	}
@@ -108,18 +97,21 @@ func (c *callbackBusinessCluster) CallbackCreateClusterResident() tgbot.ViewFunc
 		userID := update.CallbackQuery.Message.Chat.ID
 		id := entity.FindID(update.CallbackData())
 		if id == 0 {
+			c.store.Delete(userID)
 			c.log.Error("entity.FindID: %v")
 			return errors.New("zero id")
 		}
 
 		data, exist := c.store.Read(userID)
 		if !exist {
+			c.store.Delete(userID)
 			return errors.New("internal error")
 		}
 
 		data = append(data, id)
 		err := c.businessCluster.CreateClusterResident(ctx, data[0].(int), data[1].(int)) //TODO переделать
 		if err != nil {
+			c.store.Delete(userID)
 			c.log.Error("businessCluster.CreateClusterResident: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
 			return nil
@@ -131,6 +123,7 @@ func (c *callbackBusinessCluster) CallbackCreateClusterResident() tgbot.ViewFunc
 			return err
 		}
 
+		c.store.Delete(userID)
 		return nil
 	}
 }

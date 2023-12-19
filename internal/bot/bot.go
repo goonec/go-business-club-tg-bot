@@ -60,7 +60,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, residentUsecase, log, store)
 	scheduleCallback := callback.NewCallbackSchedule(scheduleUsecase, log)
 
-	newBot := tgbot.NewBot(bot, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, cfg.Chat.ChatID)
+	newBot := tgbot.NewBot(bot, store, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, cfg.Chat.ChatID)
 	newBot.RegisterCommandView("admin", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewAdminCommand()))
 	newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResident()))
 	newBot.RegisterCommandView("create_resident_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResidentPhoto()))

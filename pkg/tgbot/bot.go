@@ -7,6 +7,7 @@ import (
 	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/internal/usecase"
+	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/openai"
 	"runtime/debug"
@@ -24,6 +25,8 @@ type Bot struct {
 	userUsecase  usecase.User
 	cmdView      map[string]ViewFunc
 	callbackView map[string]ViewFunc
+
+	store *localstore.Store
 
 	channelID int64
 
@@ -73,6 +76,7 @@ func (b *Bot) delete(userID int64) {
 }
 
 func NewBot(api *tgbotapi.BotAPI,
+	store *localstore.Store,
 	log *logger.Logger,
 	openAI *openai.OpenAI,
 	userUsecase usecase.User,
@@ -82,6 +86,7 @@ func NewBot(api *tgbotapi.BotAPI,
 	channelID int64) *Bot {
 	return &Bot{
 		api:                 api,
+		store:               store,
 		log:                 log,
 		openAI:              openAI,
 		userUsecase:         userUsecase,
@@ -553,6 +558,7 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 
 func (b *Bot) cancelMessageWithState(userID int64) {
 	b.delete(userID)
+	b.store.Delete(userID)
 
 	msg := tgbotapi.NewMessage(userID, "Все команды отменены.")
 	if _, err := b.api.Send(msg); err != nil {
