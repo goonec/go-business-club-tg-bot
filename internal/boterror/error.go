@@ -38,7 +38,7 @@ func ParseErrToText(err error) string {
 
 	switch {
 	case errors.Is(err, ErrNotFound):
-		return "Резидент не был найден"
+		return "Не было найдено"
 	case errors.Is(err, ErrIncorrectAdminFirstInput):
 		return "Должно быть введено минимум 5 слов при первом вводе [1]"
 	case errors.Is(err, ErrIncorrectAdminFirstInputPhoto):
