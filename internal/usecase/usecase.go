@@ -21,6 +21,7 @@ type User interface {
 }
 
 type BusinessCluster interface {
+	DeleteCluster(ctx context.Context, clusterID int) error
 	CreateClusterResident(ctx context.Context, idBusinessCluster int, idResident int) error
 	Create(ctx context.Context, cluster string) error
 	GetAllBusinessCluster(ctx context.Context, callbackCommand string) (*tgbotapi.InlineKeyboardMarkup, error)

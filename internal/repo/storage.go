@@ -21,6 +21,7 @@ type User interface {
 }
 
 type BusinessCluster interface {
+	Delete(ctx context.Context, clusterID int) error
 	Create(ctx context.Context, name string) (int, error)
 	GetByName(ctx context.Context, name string) (*entity.BusinessCluster, error)
 	GetAll(ctx context.Context) ([]entity.BusinessCluster, error)

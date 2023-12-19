@@ -53,6 +53,10 @@ func (b *businessClusterUsecase) Create(ctx context.Context, cluster string) err
 	return nil
 }
 
+func (b *businessClusterUsecase) DeleteCluster(ctx context.Context, clusterID int) error {
+	return b.businessClusterRepo.Delete(ctx, clusterID)
+}
+
 func (b *businessClusterUsecase) GetAllBusinessCluster(ctx context.Context, callbackCommand string) (*tgbotapi.InlineKeyboardMarkup, error) {
 	businessCluster, err := b.businessClusterRepo.GetAll(ctx)
 	if err != nil {

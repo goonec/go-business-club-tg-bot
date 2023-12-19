@@ -85,3 +85,25 @@ func (v *viewCluster) ViewShowAllBusinessCluster() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+func (v *viewCluster) ViewDeleteCluster() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		bcMarkup, err := v.clusterUsecase.GetAllBusinessCluster(ctx, "deletecluster_")
+		if err != nil {
+			v.log.Error("businessCluster.GetAllBusinessCluster: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "Выбирете кластер, который хотите удалить")
+		msg.ParseMode = tgbotapi.ModeHTML
+		msg.ReplyMarkup = &bcMarkup
+		if _, err := bot.Send(msg); err != nil {
+			v.log.Error("failed to send message: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		return nil
+	}
+}

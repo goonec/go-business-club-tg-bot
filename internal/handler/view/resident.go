@@ -53,10 +53,24 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 			"{\n" +
 			`"cluster":"Введите название кластера"` +
 			"\n}\n" +
-			"/add_cluster_to_resident - назначить кластер резеденту")
+			"/add_cluster_to_resident - назначить кластер резеденту\n" +
+			"/delete_cluster - удаление кластера")
+
+		textCluster :=
+			"/create_cluster\n" +
+				"{\n" +
+				`"cluster":"Введите название кластера"` +
+				"\n}\n"
+
+		msgCluster := tgbotapi.NewMessage(update.FromChat().ID, textCluster)
+
 		msg := tgbotapi.NewMessage(update.FromChat().ID, text)
 
 		if _, err := bot.Send(msg); err != nil {
+			return err
+		}
+
+		if _, err := bot.Send(msgCluster); err != nil {
 			return err
 		}
 

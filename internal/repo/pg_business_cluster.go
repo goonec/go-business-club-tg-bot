@@ -68,3 +68,10 @@ func (b *businessClusterRepo) GetAll(ctx context.Context) ([]entity.BusinessClus
 
 	return businessClusters, nil
 }
+
+func (b *businessClusterRepo) Delete(ctx context.Context, clusterID int) error {
+	query := `delete from business_cluster where id = $1`
+
+	_, err := b.Pool.Exec(ctx, query, clusterID)
+	return err
+}

@@ -127,3 +127,30 @@ func (c *callbackBusinessCluster) CallbackCreateClusterResident() tgbot.ViewFunc
 		return nil
 	}
 }
+
+func (c *callbackBusinessCluster) CallbackDeleteCluster() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		userID := update.CallbackQuery.Message.Chat.ID
+		id := entity.FindID(update.CallbackData())
+		if id == 0 {
+			c.store.Delete(userID)
+			c.log.Error("entity.FindID: %v")
+			return errors.New("zero id")
+		}
+
+		err := c.businessCluster.DeleteCluster(ctx, id)
+		if err != nil {
+			c.log.Error("businessCluster.DeleteCluster: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		msg := tgbotapi.NewMessage(update.FromChat().ID, `Кластер удален успешно`)
+
+		if _, err := bot.Send(msg); err != nil {
+			return err
+		}
+
+		return nil
+	}
+}

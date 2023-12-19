@@ -68,12 +68,14 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("delete_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewDeleteResident()))
 	newBot.RegisterCommandView("create_schedule", middleware.AdminMiddleware(cfg.Chat.ChatID, scheduleView.ViewCreateSchedule()))
 	newBot.RegisterCommandView("create_cluster", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewCreateCluster()))
+	newBot.RegisterCommandView("delete_cluster", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewDeleteCluster()))
 
 	newBot.RegisterCommandView("start", residentView.ViewStartButton())
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
 
 	newBot.RegisterCommandView("add_cluster_to_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewShowAllBusinessCluster()))
 	newBot.RegisterCommandCallback("getcluster", businessClusterCallback.CallbackGetIDCluster())
+	newBot.RegisterCommandCallback("deletecluster", businessClusterCallback.CallbackDeleteCluster())
 	newBot.RegisterCommandCallback("fiogetresident", businessClusterCallback.CallbackCreateClusterResident())
 
 	//newBot.RegisterCommandCallback("stop_chat_gpt", residentCallback.CallbackStopChatGPT())
