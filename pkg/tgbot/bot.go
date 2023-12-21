@@ -212,7 +212,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 		// Провекрка на отсутствие команды и ожидания для запросов к openai, работает по аналагу default
 		if _, ok := b.readCommand(update.Message.Chat.ID, "chat_gpt"); ok {
 			go func() {
-				_, err = b.api.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "✏️ Запрос создан, ожидайте…\n\n⏳ Среднее время ответа ChatGPT составляет от 7 до 19 секунд"))
+				_, err = b.api.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "💬 Нейросеть Avanti ответит на все ваши вопросы! Для начала работы напишите любой запрос...\n\n👌Если вы хотите остановить чат и воспользоваться другими командами используейте - /stop_chat_gpt"))
 				if err != nil {
 					b.log.Error("failed to send message from ChatGPT %v", err)
 					return
