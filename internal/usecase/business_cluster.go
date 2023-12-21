@@ -70,7 +70,7 @@ func (b *businessClusterUsecase) createBusinessClusterMarkup(businessCluster []e
 	var rows [][]tgbotapi.InlineKeyboardButton
 	var row []tgbotapi.InlineKeyboardButton
 
-	buttonsPerRow := 3
+	buttonsPerRow := 1
 
 	for i, el := range businessCluster {
 		button := tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%s", el.Name),

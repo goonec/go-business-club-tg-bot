@@ -35,7 +35,6 @@ func NewError(msg string, err error) *BotError {
 }
 
 func ParseErrToText(err error) string {
-
 	switch {
 	case errors.Is(err, ErrNotFound):
 		return "Не было найдено"
