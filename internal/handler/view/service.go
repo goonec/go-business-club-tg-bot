@@ -48,6 +48,7 @@ func (v *viewService) ViewCreateService() tgbot.ViewFunc {
 
 		msg := tgbotapi.NewMessage(update.FromChat().ID, `Раздел услуги добавлен успешно.`)
 		if _, err := bot.Send(msg); err != nil {
+			v.log.Error("%v", err)
 			return err
 		}
 
@@ -71,9 +72,11 @@ func (v *viewService) ViewCreateUnderService() tgbot.ViewFunc {
 				handler.HandleError(bot, update, boterror.ParseErrToText(err))
 				return nil
 			}
-			data = append(data, args)
 
-			sdMarkup, err := v.serviceUsecase.GetAllServiceDescribe(ctx, "admin")
+			data = []interface{}{args.Name, args.Describe}
+			v.store.Set(data, userID)
+
+			sdMarkup, err := v.serviceUsecase.GetAllService(ctx, "create")
 			if err != nil {
 				v.log.Error("serviceUsecase.GetAllServiceDescribe: %v", err)
 				v.store.Delete(userID)
@@ -84,6 +87,7 @@ func (v *viewService) ViewCreateUnderService() tgbot.ViewFunc {
 			msg := tgbotapi.NewMessage(update.FromChat().ID, `Выбирите услугу, которой нужно добавить раздел с описанием`)
 			msg.ReplyMarkup = sdMarkup
 			if _, err := bot.Send(msg); err != nil {
+				v.log.Error("%v", err)
 				v.store.Delete(userID)
 				return err
 			}
@@ -92,6 +96,7 @@ func (v *viewService) ViewCreateUnderService() tgbot.ViewFunc {
 
 			msg := tgbotapi.NewMessage(update.FromChat().ID, `Произошла ошибка из-за прошлых операций. Попробуйте еще раз.`)
 			if _, err := bot.Send(msg); err != nil {
+				v.log.Error("%v", err)
 				return err
 			}
 		}

@@ -90,10 +90,10 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandCallback("resident", residentCallback.CallbackShowAllResident())
 	newBot.RegisterCommandCallback("chat_gpt", residentCallback.CallbackStartChatGPT())
 	newBot.RegisterCommandCallback("schedule", scheduleCallback.CallbackGetSchedule())
-	newBot.RegisterCommandCallback("servicelist", serviceCallback.ViewShowAllService())
+	newBot.RegisterCommandCallback("servicelist", serviceCallback.CallbackShowAllService())
 
-	newBot.RegisterCommandCallback("service", serviceCallback.ViewShowAllServiceDescribe())
-	newBot.RegisterCommandCallback("servicedescribeinfo", serviceCallback.ViewShowServiceInfo())
+	newBot.RegisterCommandCallback("service", serviceCallback.CallbackShowAllServiceDescribe())
+	newBot.RegisterCommandCallback("servicedescribeinfo", serviceCallback.CallbackShowServiceInfo())
 
 	newBot.RegisterCommandCallback("main_menu", residentCallback.CallbackStartButton())
 
@@ -101,6 +101,8 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandCallback("allcluster", businessClusterCallback.CallbackShowAllBusinessCluster())
 	newBot.RegisterCommandCallback("fiodelete", residentCallback.CallbackDeleteResident())
 	newBot.RegisterCommandCallback("fio", residentCallback.CallbackGetResident())
+
+	newBot.RegisterCommandCallback("servicecreate", serviceCallback.CallbackCreateServiceDescribe())
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()

@@ -27,7 +27,7 @@ func NewCallbackService(serviceUsecase usecase.Service, store *localstore.Store,
 	}
 }
 
-func (c *callbackService) ViewShowAllService() tgbot.ViewFunc {
+func (c *callbackService) CallbackShowAllService() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 		serviceMarkup, err := c.serviceUsecase.GetAllService(ctx, "")
 		if err != nil {
@@ -50,7 +50,7 @@ func (c *callbackService) ViewShowAllService() tgbot.ViewFunc {
 	}
 }
 
-func (c *callbackService) ViewShowAllServiceDescribe() tgbot.ViewFunc {
+func (c *callbackService) CallbackShowAllServiceDescribe() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 		id := entity.FindID(update.CallbackData())
 		if id == 0 {
@@ -77,7 +77,7 @@ func (c *callbackService) ViewShowAllServiceDescribe() tgbot.ViewFunc {
 	}
 }
 
-func (c *callbackService) ViewShowServiceInfo() tgbot.ViewFunc {
+func (c *callbackService) CallbackShowServiceInfo() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 		id := entity.FindID(update.CallbackData())
 		if id == 0 {
@@ -106,6 +106,49 @@ func (c *callbackService) ViewShowServiceInfo() tgbot.ViewFunc {
 
 		if _, err := bot.Send(msg); err != nil {
 			return err
+		}
+		return nil
+	}
+}
+
+func (c *callbackService) CallbackCreateServiceDescribe() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		userID := update.CallbackQuery.Message.Chat.ID
+
+		data, exist := c.store.Read(userID)
+		if exist {
+			id := entity.FindID(update.CallbackData())
+			if id == 0 {
+				c.log.Error("entity.FindID: %v")
+				handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectCallbackData))
+				return nil
+			}
+
+			serviceDescribe := &entity.ServiceDescribe{
+				Name:      data[0].(string),
+				Describe:  data[1].(string),
+				ServiceID: id,
+			}
+
+			err := c.serviceUsecase.CreateServiceDescribe(ctx, serviceDescribe)
+			if err != nil {
+				c.log.Error("serviceUsecase.CreateServiceDescribe: %v", err)
+				c.store.Delete(userID)
+				handler.HandleError(bot, update, boterror.ParseErrToText(err))
+				return nil
+			}
+
+			msg := tgbotapi.NewMessage(update.FromChat().ID, "Добавление прошло успешно")
+			if _, err := bot.Send(msg); err != nil {
+				c.log.Error("failed to send message: %v", err)
+				return err
+			}
+		} else {
+			msg := tgbotapi.NewMessage(update.FromChat().ID, "Произошла ошибика на сервере, попробуйте применить команду /cancel и заново добавить данные")
+			if _, err := bot.Send(msg); err != nil {
+				c.log.Error("failed to send message: %v", err)
+				return err
+			}
 		}
 		return nil
 	}
