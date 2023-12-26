@@ -71,11 +71,8 @@ create table if not exists service_describe(
 create table if not exists feedback(
     id int generated always as identity,
     message text,
+    type varchar(50) not null,
     created_at timestamp default current_timestamp not null,
     tg_username text,
     primary key (id)
 );
-
-select sd.id, sd.id_service,sd.describe,s.name, sb.name from service_describe sd
-                                                                 join service s on s.id = sd.id_service
-where sd.id = $1

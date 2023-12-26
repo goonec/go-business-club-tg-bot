@@ -5,9 +5,9 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/handler"
+	"github.com/goonec/business-tg-bot/internal/handler/tgbot"
 	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/logger"
-	"github.com/goonec/business-tg-bot/pkg/tgbot"
 	"time"
 )
 

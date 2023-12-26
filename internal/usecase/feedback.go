@@ -25,7 +25,6 @@ func (f *feedbackUsecase) DeleteFeedback(ctx context.Context, id int) error {
 	panic("implement me")
 }
 
-func (f *feedbackUsecase) CreateFeedback(ctx context.Context, feedback *entity.Feedback) error {
-	f.feedbackRepo.Create(ctx, feedback)
-	panic("implement me")
+func (f *feedbackUsecase) CreateFeedback(ctx context.Context, feedback *entity.Feedback) (*entity.Feedback, error) {
+	return f.feedbackRepo.Create(ctx, feedback)
 }

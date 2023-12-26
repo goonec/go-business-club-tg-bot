@@ -19,7 +19,7 @@ func NewFeedbackRepo(pg *postgres.Postgres) Feedback {
 }
 
 func (f *feedbackRepo) GetAll(ctx context.Context) ([]entity.Feedback, error) {
-	query := `select id,message,created_at,tg_username from feedback`
+	query := `select id,message,created_at,tg_username,type from feedback`
 
 	rows, err := f.Pool.Query(ctx, query)
 	if err != nil {
@@ -37,6 +37,7 @@ func (f *feedbackRepo) GetAll(ctx context.Context) ([]entity.Feedback, error) {
 			&f.Message,
 			&f.CreatedAt,
 			&f.UsernameTG,
+			&f.Type,
 		)
 		if err != nil {
 			return nil, err
@@ -60,11 +61,11 @@ func (f *feedbackRepo) Delete(ctx context.Context, id int) error {
 }
 
 func (f *feedbackRepo) Create(ctx context.Context, feedback *entity.Feedback) (*entity.Feedback, error) {
-	query := `insert into feedback (message,tg_username) values ($1,$2) returning *`
+	query := `insert into feedback (message,tg_username,type) values ($1,$2,$3) returning *`
 
 	var fb entity.Feedback
 
-	err := f.Pool.QueryRow(ctx, query, feedback.Message, feedback.UsernameTG).Scan(
+	err := f.Pool.QueryRow(ctx, query, feedback.Message, feedback.UsernameTG, feedback.Type).Scan(
 		&fb.ID,
 		&fb.Message,
 		&fb.CreatedAt,

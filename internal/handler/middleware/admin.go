@@ -4,9 +4,8 @@ import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goonec/business-tg-bot/internal/boterror"
+	"github.com/goonec/business-tg-bot/internal/handler/tgbot"
 	"log"
-
-	"github.com/goonec/business-tg-bot/pkg/tgbot"
 )
 
 func AdminMiddleware(channelID int64, next tgbot.ViewFunc) tgbot.ViewFunc {

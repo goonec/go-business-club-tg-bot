@@ -46,4 +46,5 @@ type Service interface {
 type Feedback interface {
 	GetAllFeedback(ctx context.Context) ([]entity.Feedback, error)
 	DeleteFeedback(ctx context.Context, id int) error
+	CreateFeedback(ctx context.Context, feedback *entity.Feedback) (*entity.Feedback, error)
 }

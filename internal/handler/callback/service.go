@@ -7,10 +7,11 @@ import (
 	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/internal/handler"
+	"github.com/goonec/business-tg-bot/internal/handler/tgbot"
 	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
-	"github.com/goonec/business-tg-bot/pkg/tgbot"
+	"strings"
 )
 
 type callbackService struct {
@@ -93,11 +94,14 @@ func (c *callbackService) CallbackShowServiceInfo() tgbot.ViewFunc {
 			return nil
 		}
 
-		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, fmt.Sprintf(
-			"Название услуги: %s"+
-				"\n\n"+
-				"Название раздела: %s\n"+
-				"Описание: %s", serviceDescribe.Service.Name, serviceDescribe.Name, serviceDescribe.Describe))
+		var builder strings.Builder
+		builder.WriteString(fmt.Sprintf("Название услуги: %s\n\n", serviceDescribe.Service.Name))
+		builder.WriteString(fmt.Sprintf("Название раздела: %s\n", serviceDescribe.Name))
+		if serviceDescribe.Describe != "" {
+			builder.WriteString(fmt.Sprintf("Описание: %s", serviceDescribe.Describe))
+		}
+
+		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, builder.String())
 
 		serviceDescribeMarkup := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(handler.FeedbackButton),
 			tgbotapi.NewInlineKeyboardRow(handler.MainMenuButton))
@@ -120,6 +124,7 @@ func (c *callbackService) CallbackCreateServiceDescribe() tgbot.ViewFunc {
 			id := entity.FindID(update.CallbackData())
 			if id == 0 {
 				c.log.Error("entity.FindID: %v")
+				c.store.Delete(userID)
 				handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectCallbackData))
 				return nil
 			}
@@ -138,8 +143,10 @@ func (c *callbackService) CallbackCreateServiceDescribe() tgbot.ViewFunc {
 				return nil
 			}
 
+			c.store.Delete(userID)
 			msg := tgbotapi.NewMessage(update.FromChat().ID, "Добавление прошло успешно")
 			if _, err := bot.Send(msg); err != nil {
+				c.store.Delete(userID)
 				c.log.Error("failed to send message: %v", err)
 				return err
 			}

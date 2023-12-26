@@ -8,9 +8,9 @@ import (
 	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/internal/handler"
+	"github.com/goonec/business-tg-bot/internal/handler/tgbot"
 	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/logger"
-	"github.com/goonec/business-tg-bot/pkg/tgbot"
 	"strings"
 	"sync"
 	"time"
@@ -48,13 +48,37 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 			"/delete_resident - удаление резидента\n" +
 			"/create_schedule - создание расписания\n" +
 			"/create_cluster - создать кластер\n" +
-			"Шаблон по созданию кластера:\n" +
+			"<u>Шаблон по созданию кластера:</u>\n" +
 			"/create_cluster\n" +
 			"{\n" +
 			`"cluster":"Введите название кластера"` +
 			"\n}\n" +
 			"/add_cluster_to_resident - назначить кластер резеденту\n" +
-			"/delete_cluster - удаление кластера")
+			"/delete_cluster - удаление кластера\n" +
+			"/create_service - создание услуги\n" +
+			"<u>Шаблон по созданию услуги:</u>\n" +
+			"/create_service\n" +
+			"{\n" +
+			`"service_name":"Введите название услуги"` +
+			"\n}\n" +
+			"/create_under_service - добавление резделов к услуге\n" +
+			"<u>Шаблон по созданию раздела:</u>\n" +
+			"/create_under_service\n" +
+			"{\n" +
+			`"under_service_name": "Название раздела",` + "\n" +
+			`"describe": "Если имеется, то ввести описание раздела"` +
+			"\n}\n")
+
+		textService := "/create_service\n" +
+			"{\n" +
+			`"service_name":"Введите название услуги"` +
+			"\n}\n"
+
+		textUnderService := "/create_under_service\n" +
+			"{\n" +
+			`"under_service_name": "Название раздела",` + "\n" +
+			`"describe": "Если имеется, то ввести описание раздела"` +
+			"\n}"
 
 		textCluster :=
 			"/create_cluster\n" +
@@ -62,15 +86,22 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 				`"cluster":"Введите название кластера"` +
 				"\n}\n"
 
-		msgCluster := tgbotapi.NewMessage(update.FromChat().ID, textCluster)
-
 		msg := tgbotapi.NewMessage(update.FromChat().ID, text)
+		msg.ParseMode = tgbotapi.ModeHTML
 
 		if _, err := bot.Send(msg); err != nil {
 			return err
 		}
 
-		if _, err := bot.Send(msgCluster); err != nil {
+		if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID, textCluster)); err != nil {
+			return err
+		}
+
+		if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID, textService)); err != nil {
+			return err
+		}
+
+		if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID, textUnderService)); err != nil {
 			return err
 		}
 

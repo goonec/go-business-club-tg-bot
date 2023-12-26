@@ -11,7 +11,6 @@ import (
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/openai"
 	"runtime/debug"
-	"strings"
 	"sync"
 	"time"
 )
@@ -135,40 +134,6 @@ func (b *Bot) Run(ctx context.Context) error {
 	}
 }
 
-func (b *Bot) middleware(update *tgbotapi.Update) error {
-	channel := tgbotapi.ChatInfoConfig{
-		tgbotapi.ChatConfig{
-			ChatID: b.channelID,
-		},
-	}
-
-	chat, err := b.api.GetChat(channel)
-	if err != nil {
-		b.log.Error("failed to get chat: %v", err)
-		return err
-	}
-
-	cfg := tgbotapi.GetChatMemberConfig{
-		ChatConfigWithUser: tgbotapi.ChatConfigWithUser{
-			ChatID: chat.ID,
-			UserID: update.FromChat().ID,
-		},
-	}
-
-	chatMember, err := b.api.GetChatMember(cfg)
-	if err != nil {
-		b.log.Error("error with chatID = %d:%v", chat.ID, err)
-		return err
-	}
-
-	if chatMember.Status != "administrator" && chatMember.Status != "member" && chatMember.Status != "creator" {
-		b.log.Error("[%s] %v", update.Message.From.UserName, boterror.ErrUserNotMember)
-		return boterror.ErrUserNotMember
-	}
-
-	return nil
-}
-
 func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 	defer func() {
 		if p := recover(); p != nil {
@@ -275,170 +240,6 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			}
 			return
 		}
-	}
-}
-
-func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
-	callbackData := update.CallbackData()
-
-	switch {
-	case strings.HasPrefix(callbackData, "fio_"):
-		callbackView, ok := b.callbackView["fio"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "fiodelete_"):
-		callbackView, ok := b.callbackView["fiodelete"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "resident"):
-		callbackView, ok := b.callbackView["resident"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "main_menu"):
-		callbackView, ok := b.callbackView["main_menu"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "chat_gpt"):
-		_, ok := b.read(update.CallbackQuery.Message.Chat.ID)
-		if !ok {
-			b.stateStore[update.CallbackQuery.Message.Chat.ID] = make(map[string][]string)
-			b.stateStore[update.CallbackQuery.Message.Chat.ID]["chat_gpt"] = []string{}
-		}
-		callbackView, ok := b.callbackView["chat_gpt"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "allcluster"):
-		callbackView, ok := b.callbackView["allcluster"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "cluster_"):
-		callbackView, ok := b.callbackView["cluster"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "schedule"):
-		callbackView, ok := b.callbackView["schedule"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "getcluster_"):
-		callbackView, ok := b.callbackView["getcluster"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "fiogetresident_"):
-		callbackView, ok := b.callbackView["fiogetresident"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "deletecluster_"):
-		callbackView, ok := b.callbackView["deletecluster"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "servicelist"):
-		callbackView, ok := b.callbackView["servicelist"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "service_"):
-		callbackView, ok := b.callbackView["service"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "servicedescribelist_"):
-		callbackView, ok := b.callbackView["servicedescribelist"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "servicedescribe_"):
-		callbackView, ok := b.callbackView["servicedescribe"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	case strings.HasPrefix(callbackData, "servicecreate_"):
-		callbackView, ok := b.callbackView["servicecreate"]
-		if !ok {
-			return errors.New("not found in map"), nil
-		}
-		return nil, callbackView
-	}
-
-	return nil, nil
-}
-
-func (b *Bot) IsCommandText(text string, userID int64) *bool {
-	switch text {
-	case "/cancel":
-		b.cancelMessageWithState(userID)
-		return &[]bool{false}[0]
-	case "/stop_chat_gpt":
-		b.cancelChatGptDialog(userID)
-		return &[]bool{false}[0]
-	case "/create_resident":
-		_, ok := b.read(userID)
-		if !ok {
-			b.stateStore[userID] = make(map[string][]string)
-			b.stateStore[userID]["/create_resident"] = []string{}
-		}
-		return &[]bool{true}[0]
-	case "/create_resident_photo":
-		_, ok := b.read(userID)
-		if !ok {
-			b.stateStore[userID] = make(map[string][]string)
-			b.stateStore[userID]["/create_resident_photo"] = []string{}
-		}
-		return &[]bool{true}[0]
-	case "/create_schedule":
-		_, ok := b.read(userID)
-		if !ok {
-			b.stateStore[userID] = make(map[string][]string)
-			b.stateStore[userID]["/create_schedule"] = []string{}
-		}
-		return &[]bool{true}[0]
-	case "/notify":
-		_, ok := b.read(userID)
-		if !ok {
-			b.stateStore[userID] = make(map[string][]string)
-			b.stateStore[userID]["/notify"] = []string{}
-		}
-		return &[]bool{true}[0]
-	//case "/chat_gpt":
-	//	_, ok := b.read(userID)
-	//	if !ok {
-	//		b.stateStore[userID] = make(map[string][]string)
-	//		b.stateStore[userID]["/chat_gpt"] = []string{}
-	//	}
-	//
-	//	//msg := tgbotapi.NewMessage(userID, "Начните общение с Chat GPT!  💬\nЕсли вы хотите остановить чат и воспользоваться другими командами "+
-	//	//	"используейте - /stop_chat_gpt")
-	//	//if _, err := b.api.Send(msg); err != nil {
-	//	//	b.log.Error("failed to send message: %v", err)
-	//	//}
-	//	return false
-	default:
-		return nil
 	}
 }
 
@@ -590,23 +391,4 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 		return true
 	}
 	return true
-}
-
-func (b *Bot) cancelMessageWithState(userID int64) {
-	b.delete(userID)
-	b.store.Delete(userID)
-
-	msg := tgbotapi.NewMessage(userID, "Все команды отменены.")
-	if _, err := b.api.Send(msg); err != nil {
-		b.log.Error("failed to send message: %v", err)
-	}
-}
-
-func (b *Bot) cancelChatGptDialog(userID int64) {
-	b.delete(userID)
-
-	msg := tgbotapi.NewMessage(userID, "Chat GPT остановлен.")
-	if _, err := b.api.Send(msg); err != nil {
-		b.log.Error("failed to send message: %v", err)
-	}
 }
