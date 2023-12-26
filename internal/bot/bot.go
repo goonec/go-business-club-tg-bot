@@ -59,12 +59,12 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh, transportСhResident)
 	scheduleView := view.NewViewSchedule(scheduleUsecase, log, transportСhSchedule)
 	clusterView := view.NewViewCluster(businessClusterUsecase, log)
-	serviceView := view.NewViewService(serviceUsecase, log)
+	serviceView := view.NewViewService(serviceUsecase, store, log)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log, store)
 	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, residentUsecase, log, store)
 	scheduleCallback := callback.NewCallbackSchedule(scheduleUsecase, log)
-	serviceCallback := callback.NewCallbackService(serviceUsecase, log)
+	serviceCallback := callback.NewCallbackService(serviceUsecase, store, log)
 
 	newBot := tgbot.NewBot(bot, store, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, cfg.Chat.ChatID)
 	newBot.RegisterCommandView("admin", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewAdminCommand()))
@@ -76,6 +76,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("create_cluster", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewCreateCluster()))
 	newBot.RegisterCommandView("delete_cluster", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewDeleteCluster()))
 	newBot.RegisterCommandView("create_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateService()))
+	newBot.RegisterCommandView("create_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateUnderService()))
 
 	newBot.RegisterCommandView("start", residentView.ViewStartButton())
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())

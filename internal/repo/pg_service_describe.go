@@ -70,3 +70,32 @@ func (s *serviceDescribeRepo) Get(ctx context.Context, id int) (*entity.ServiceD
 	err := s.Pool.QueryRow(ctx, query, id).Scan(&sd.ID, &sd.ServiceID, &sd.Describe, &sd.Service.Name, &sd.Name)
 	return sd, err
 }
+
+func (s *serviceDescribeRepo) GetAll(ctx context.Context) ([]entity.ServiceDescribe, error) {
+	query := `select id,name from service_describe`
+
+	rows, err := s.Pool.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	service := make([]entity.ServiceDescribe, 0, 64)
+
+	for rows.Next() {
+		var s entity.ServiceDescribe
+
+		err := rows.Scan(&s.ID, &s.Name)
+		if err != nil {
+			return nil, err
+		}
+
+		service = append(service, s)
+	}
+	if rows.Err() != nil {
+		return nil, err
+	}
+
+	return service, nil
+}

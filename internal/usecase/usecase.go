@@ -37,9 +37,10 @@ type Service interface {
 	CreateServiceDescribe(ctx context.Context, service *entity.ServiceDescribe) error
 	DeleteService(ctx context.Context, id int) error
 	DeleteServiceDescribe(ctx context.Context, id int) error
-	GetAllService(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error)
-	GetAllServiceDescribe(ctx context.Context, serviceID int, command string) (*tgbotapi.InlineKeyboardMarkup, error)
+	GetAllService(ctx context.Context, command string) (*tgbotapi.InlineKeyboardMarkup, error)
+	GetAllServiceDescribeByServiceID(ctx context.Context, serviceID int, command string) (*tgbotapi.InlineKeyboardMarkup, error)
 	Get(ctx context.Context, serviceDescribeID int) (*entity.ServiceDescribe, error)
+	GetAllServiceDescribe(ctx context.Context, command string) (*tgbotapi.InlineKeyboardMarkup, error)
 }
 
 type Feedback interface {

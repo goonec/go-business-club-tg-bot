@@ -6,6 +6,7 @@ import (
 	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/handler"
 	"github.com/goonec/business-tg-bot/internal/usecase"
+	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/parser"
 	"github.com/goonec/business-tg-bot/pkg/tgbot"
@@ -13,12 +14,15 @@ import (
 
 type viewService struct {
 	serviceUsecase usecase.Service
-	log            *logger.Logger
+	store          *localstore.Store
+
+	log *logger.Logger
 }
 
-func NewViewService(serviceUsecase usecase.Service, log *logger.Logger) *viewService {
+func NewViewService(serviceUsecase usecase.Service, store *localstore.Store, log *logger.Logger) *viewService {
 	return &viewService{
 		serviceUsecase: serviceUsecase,
+		store:          store,
 		log:            log,
 	}
 }
@@ -47,6 +51,50 @@ func (v *viewService) ViewCreateService() tgbot.ViewFunc {
 			return err
 		}
 
+		return nil
+	}
+}
+
+func (v *viewService) ViewCreateUnderService() tgbot.ViewFunc {
+	type addServiceDescribe struct {
+		Name     string `json:"under_service_name"`
+		Describe string `json:"describe"`
+	}
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		userID := update.Message.Chat.ID
+		data, exist := v.store.Read(userID)
+		if !exist {
+			args, err := parser.ParseJSON[addServiceDescribe](update.Message.CommandArguments())
+			if err != nil {
+				v.log.Error("ParseJSON: %v", err)
+				v.store.Delete(userID)
+				handler.HandleError(bot, update, boterror.ParseErrToText(err))
+				return nil
+			}
+			data = append(data, args)
+
+			sdMarkup, err := v.serviceUsecase.GetAllServiceDescribe(ctx, "admin")
+			if err != nil {
+				v.log.Error("serviceUsecase.GetAllServiceDescribe: %v", err)
+				v.store.Delete(userID)
+				handler.HandleError(bot, update, boterror.ParseErrToText(err))
+				return nil
+			}
+
+			msg := tgbotapi.NewMessage(update.FromChat().ID, `Выбирите услугу, которой нужно добавить раздел с описанием`)
+			msg.ReplyMarkup = sdMarkup
+			if _, err := bot.Send(msg); err != nil {
+				v.store.Delete(userID)
+				return err
+			}
+		} else {
+			v.store.Delete(userID)
+
+			msg := tgbotapi.NewMessage(update.FromChat().ID, `Произошла ошибка из-за прошлых операций. Попробуйте еще раз.`)
+			if _, err := bot.Send(msg); err != nil {
+				return err
+			}
+		}
 		return nil
 	}
 }

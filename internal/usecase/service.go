@@ -61,16 +61,16 @@ func (s *serviceUsecase) DeleteServiceDescribe(ctx context.Context, id int) erro
 	return s.serviceDescribeRepo.Delete(ctx, id)
 }
 
-func (s *serviceUsecase) GetAllService(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error) {
+func (s *serviceUsecase) GetAllService(ctx context.Context, command string) (*tgbotapi.InlineKeyboardMarkup, error) {
 	service, err := s.serviceRepo.GetAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.createServiceMarkup(service, "")
+	return s.createServiceMarkup(service, command)
 }
 
-func (s *serviceUsecase) GetAllServiceDescribe(ctx context.Context, serviceID int, command string) (*tgbotapi.InlineKeyboardMarkup, error) {
+func (s *serviceUsecase) GetAllServiceDescribeByServiceID(ctx context.Context, serviceID int, command string) (*tgbotapi.InlineKeyboardMarkup, error) {
 	serviceDescribe, err := s.serviceDescribeRepo.GetAllByServiceID(ctx, serviceID)
 	if err != nil {
 		return nil, err
@@ -81,6 +81,15 @@ func (s *serviceUsecase) GetAllServiceDescribe(ctx context.Context, serviceID in
 
 func (s *serviceUsecase) Get(ctx context.Context, serviceDescribeID int) (*entity.ServiceDescribe, error) {
 	return s.serviceDescribeRepo.Get(ctx, serviceDescribeID)
+}
+
+func (s *serviceUsecase) GetAllServiceDescribe(ctx context.Context, command string) (*tgbotapi.InlineKeyboardMarkup, error) {
+	serviceDescribe, err := s.serviceDescribeRepo.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.createServiceDescribeMarkup(serviceDescribe, command)
 }
 
 func (s *serviceUsecase) createServiceMarkup(service []entity.Service, command string) (*tgbotapi.InlineKeyboardMarkup, error) {
@@ -100,11 +109,10 @@ func (s *serviceUsecase) createServiceMarkup(service []entity.Service, command s
 			row = []tgbotapi.InlineKeyboardButton{}
 		}
 	}
-
-	mainMenuButton := tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
-	//feedbackButton := tgbotapi.NewInlineKeyboardButtonData("Оставить обратную связь", "feedback")
-	rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
-	//rows = append(rows, []tgbotapi.InlineKeyboardButton{feedbackButton})
+	if command != "create" {
+		mainMenuButton := tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
+		rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
+	}
 
 	markup := tgbotapi.NewInlineKeyboardMarkup(rows...)
 

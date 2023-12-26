@@ -8,25 +8,28 @@ import (
 	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/internal/handler"
 	"github.com/goonec/business-tg-bot/internal/usecase"
+	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/tgbot"
 )
 
 type callbackService struct {
 	serviceUsecase usecase.Service
+	store          *localstore.Store
 	log            *logger.Logger
 }
 
-func NewCallbackService(serviceUsecase usecase.Service, log *logger.Logger) *callbackService {
+func NewCallbackService(serviceUsecase usecase.Service, store *localstore.Store, log *logger.Logger) *callbackService {
 	return &callbackService{
 		serviceUsecase: serviceUsecase,
+		store:          store,
 		log:            log,
 	}
 }
 
 func (c *callbackService) ViewShowAllService() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		serviceMarkup, err := c.serviceUsecase.GetAllService(ctx)
+		serviceMarkup, err := c.serviceUsecase.GetAllService(ctx, "")
 		if err != nil {
 			c.log.Error("serviceUsecase.GetAllService: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
@@ -56,9 +59,9 @@ func (c *callbackService) ViewShowAllServiceDescribe() tgbot.ViewFunc {
 			return nil
 		}
 
-		serviceDescribeMarkup, err := c.serviceUsecase.GetAllServiceDescribe(ctx, id, "")
+		serviceDescribeMarkup, err := c.serviceUsecase.GetAllServiceDescribeByServiceID(ctx, id, "describe")
 		if err != nil {
-			c.log.Error("serviceUsecase.GetAllServiceDescribe: %v", err)
+			c.log.Error("serviceUsecase.GetAllServiceDescribeByServiceID: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
 			return nil
 		}
