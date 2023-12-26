@@ -5,6 +5,7 @@ DO $$
         END IF;
     END $$;
 
+
 create table if not exists "user"(
     id bigint unique,
     tg_username text unique,
@@ -48,5 +49,20 @@ create table if not exists schedule(
     id int generated always as identity,
     photo_file_id varchar(150) null,
     created_at timestamp default current_timestamp not null,
+    primary key (id)
+);
+
+create table if not exists service(
+  id int generated always as identity,
+  name varchar(200),
+  primary key (id)
+);
+
+create table if not exists service_describe(
+    id int generated always as identity,
+    id_service int,
+    describe text not null,
+    foreign key (id_service)
+        references service (id) on delete cascade,
     primary key (id)
 );

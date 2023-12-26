@@ -35,3 +35,12 @@ type Schedule interface {
 	Create(ctx context.Context, file string) error
 	Get(ctx context.Context) (*entity.Schedule, error)
 }
+
+type Service interface {
+	Create(ctx context.Context, service *entity.Service) error
+	GetByID(ctx context.Context, id int) (*entity.Service, error)
+	GetAll(ctx context.Context) ([]entity.Service, error)
+}
+
+type ServiceDescribe interface {
+}
