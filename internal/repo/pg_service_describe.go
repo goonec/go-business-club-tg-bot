@@ -24,7 +24,7 @@ func (s *serviceDescribeRepo) Create(ctx context.Context, service *entity.Servic
 }
 
 func (s *serviceDescribeRepo) GetAllByServiceID(ctx context.Context, serviceID int) ([]entity.ServiceDescribe, error) {
-	query := `select sd.id, sd.id_service,sd.describe,s.name, sb.name from service_describe sd
+	query := `select sd.id, sd.id_service,sd.describe,s.name, sd.name from service_describe sd
             	join service s on s.id = sd.id_service
             where sd.id_service = $1`
 

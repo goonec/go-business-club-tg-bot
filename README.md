@@ -3,7 +3,7 @@
 
 ## Callback:
  - feedback - обратная связь
- - servicedescribe_{id} - список под-услуг
+ - servicedescribelist_{id} - список под-услуг
 
 ## View 
  - servicelist - список доступных сервисов

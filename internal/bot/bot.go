@@ -91,7 +91,8 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandCallback("schedule", scheduleCallback.CallbackGetSchedule())
 	newBot.RegisterCommandCallback("servicelist", serviceCallback.ViewShowAllService())
 
-	newBot.RegisterCommandCallback("servicedescribe", serviceCallback.ViewShowAllServiceDescribe())
+	newBot.RegisterCommandCallback("service", serviceCallback.ViewShowAllServiceDescribe())
+	newBot.RegisterCommandCallback("servicedescribeinfo", serviceCallback.ViewShowServiceInfo())
 
 	newBot.RegisterCommandCallback("main_menu", residentCallback.CallbackStartButton())
 

@@ -80,7 +80,7 @@ func (s *serviceUsecase) GetAllServiceDescribe(ctx context.Context, serviceID in
 }
 
 func (s *serviceUsecase) Get(ctx context.Context, serviceDescribeID int) (*entity.ServiceDescribe, error) {
-	return nil, nil
+	return s.serviceDescribeRepo.Get(ctx, serviceDescribeID)
 }
 
 func (s *serviceUsecase) createServiceMarkup(service []entity.Service, command string) (*tgbotapi.InlineKeyboardMarkup, error) {

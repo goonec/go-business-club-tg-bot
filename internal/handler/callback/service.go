@@ -2,6 +2,7 @@ package callback
 
 import (
 	"context"
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goonec/business-tg-bot/internal/boterror"
 	"github.com/goonec/business-tg-bot/internal/entity"
@@ -55,7 +56,7 @@ func (c *callbackService) ViewShowAllServiceDescribe() tgbot.ViewFunc {
 			return nil
 		}
 
-		serviceDescribeMarkup, err := c.serviceUsecase.GetAllServiceDescribe(ctx, id, "describe")
+		serviceDescribeMarkup, err := c.serviceUsecase.GetAllServiceDescribe(ctx, id, "")
 		if err != nil {
 			c.log.Error("serviceUsecase.GetAllServiceDescribe: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
@@ -69,6 +70,40 @@ func (c *callbackService) ViewShowAllServiceDescribe() tgbot.ViewFunc {
 			return err
 		}
 
+		return nil
+	}
+}
+
+func (c *callbackService) ViewShowServiceInfo() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		id := entity.FindID(update.CallbackData())
+		if id == 0 {
+			c.log.Error("entity.FindID: %v")
+			handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectCallbackData))
+			return nil
+		}
+
+		serviceDescribe, err := c.serviceUsecase.Get(ctx, id)
+		if err != nil {
+			c.log.Error("serviceUsecase.Get: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, fmt.Sprintf(
+			"Название услуги: %s"+
+				"\n\n"+
+				"Название раздела: %s\n"+
+				"Описание: %s", serviceDescribe.Service.Name, serviceDescribe.Name, serviceDescribe.Describe))
+
+		serviceDescribeMarkup := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(handler.FeedbackButton),
+			tgbotapi.NewInlineKeyboardRow(handler.MainMenuButton))
+
+		msg.ReplyMarkup = &serviceDescribeMarkup
+
+		if _, err := bot.Send(msg); err != nil {
+			return err
+		}
 		return nil
 	}
 }
