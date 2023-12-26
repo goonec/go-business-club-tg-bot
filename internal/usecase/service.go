@@ -70,7 +70,16 @@ func (s *serviceUsecase) GetAllService(ctx context.Context) (*tgbotapi.InlineKey
 	return s.createServiceMarkup(service, "")
 }
 
-func (s *serviceUsecase) GetAllServiceDescribe(ctx context.Context, serviceID int) (*tgbotapi.InlineKeyboardMarkup, error) {
+func (s *serviceUsecase) GetAllServiceDescribe(ctx context.Context, serviceID int, command string) (*tgbotapi.InlineKeyboardMarkup, error) {
+	serviceDescribe, err := s.serviceDescribeRepo.GetAllByServiceID(ctx, serviceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.createServiceDescribeMarkup(serviceDescribe, command)
+}
+
+func (s *serviceUsecase) Get(ctx context.Context, serviceDescribeID int) (*entity.ServiceDescribe, error) {
 	return nil, nil
 }
 
@@ -96,6 +105,32 @@ func (s *serviceUsecase) createServiceMarkup(service []entity.Service, command s
 	//feedbackButton := tgbotapi.NewInlineKeyboardButtonData("Оставить обратную связь", "feedback")
 	rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
 	//rows = append(rows, []tgbotapi.InlineKeyboardButton{feedbackButton})
+
+	markup := tgbotapi.NewInlineKeyboardMarkup(rows...)
+
+	return &markup, nil
+}
+
+func (s *serviceUsecase) createServiceDescribeMarkup(service []entity.ServiceDescribe, command string) (*tgbotapi.InlineKeyboardMarkup, error) {
+	var rows [][]tgbotapi.InlineKeyboardButton
+	var row []tgbotapi.InlineKeyboardButton
+
+	buttonsPerRow := 1
+
+	for i, el := range service {
+		button := tgbotapi.NewInlineKeyboardButtonData(fmt.Sprintf("%s", el.Name),
+			fmt.Sprintf("service%s_%d", command, el.ID))
+
+		row = append(row, button)
+
+		if (i+1)%buttonsPerRow == 0 || i == len(service)-1 {
+			rows = append(rows, row)
+			row = []tgbotapi.InlineKeyboardButton{}
+		}
+	}
+
+	mainMenuButton := tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
+	rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
 
 	markup := tgbotapi.NewInlineKeyboardMarkup(rows...)
 

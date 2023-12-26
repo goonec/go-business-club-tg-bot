@@ -13,7 +13,7 @@ var (
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Список услуг", "service_list")))
+			tgbotapi.NewInlineKeyboardButtonData("Услуги Avanti", "service_list")))
 
 	MainMenuButton = tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
 )

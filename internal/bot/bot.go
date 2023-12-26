@@ -89,7 +89,9 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandCallback("resident", residentCallback.CallbackShowAllResident())
 	newBot.RegisterCommandCallback("chat_gpt", residentCallback.CallbackStartChatGPT())
 	newBot.RegisterCommandCallback("schedule", scheduleCallback.CallbackGetSchedule())
-	newBot.RegisterCommandCallback("service_list", serviceCallback.ViewShowAllService())
+	newBot.RegisterCommandCallback("servicelist", serviceCallback.ViewShowAllService())
+
+	newBot.RegisterCommandCallback("servicedescribe", serviceCallback.ViewShowAllServiceDescribe())
 
 	newBot.RegisterCommandCallback("main_menu", residentCallback.CallbackStartButton())
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goonec/business-tg-bot/internal/boterror"
+	"github.com/goonec/business-tg-bot/internal/entity"
 	"github.com/goonec/business-tg-bot/internal/handler"
 	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/logger"
@@ -45,8 +46,29 @@ func (c *callbackService) ViewShowAllService() tgbot.ViewFunc {
 	}
 }
 
-//func (c *callbackService) ViewShowAllServiceDescribe() tgbot.ViewFunc {
-//	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-//
-//	}
-//}
+func (c *callbackService) ViewShowAllServiceDescribe() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		id := entity.FindID(update.CallbackData())
+		if id == 0 {
+			c.log.Error("entity.FindID: %v")
+			handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectCallbackData))
+			return nil
+		}
+
+		serviceDescribeMarkup, err := c.serviceUsecase.GetAllServiceDescribe(ctx, id, "describe")
+		if err != nil {
+			c.log.Error("serviceUsecase.GetAllServiceDescribe: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Название услуг")
+		msg.ReplyMarkup = serviceDescribeMarkup
+
+		if _, err := bot.Send(msg); err != nil {
+			return err
+		}
+
+		return nil
+	}
+}

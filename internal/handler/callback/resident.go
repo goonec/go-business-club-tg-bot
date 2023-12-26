@@ -35,12 +35,14 @@ func (c *callbackResident) CallbackGetResident() tgbot.ViewFunc {
 			c.log.Error("entity.FindID == 0")
 			//return boterror.ErrIncorrectCallbackData
 			handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectCallbackData))
+			return nil
 		}
 
 		resident, err := c.residentUsecase.GetResident(ctx, id)
 		if err != nil {
 			c.log.Info("residentUsecase.GetResident: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
 		}
 		userID := update.CallbackQuery.Message.Chat.ID
 
