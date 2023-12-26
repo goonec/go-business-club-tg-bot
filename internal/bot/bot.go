@@ -93,7 +93,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandCallback("servicelist", serviceCallback.CallbackShowAllService())
 
 	newBot.RegisterCommandCallback("service", serviceCallback.CallbackShowAllServiceDescribe())
-	newBot.RegisterCommandCallback("servicedescribeinfo", serviceCallback.CallbackShowServiceInfo())
+	newBot.RegisterCommandCallback("servicedescribe", serviceCallback.CallbackShowServiceInfo())
 
 	newBot.RegisterCommandCallback("main_menu", residentCallback.CallbackStartButton())
 

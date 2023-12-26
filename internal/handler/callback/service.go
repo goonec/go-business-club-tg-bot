@@ -125,8 +125,8 @@ func (c *callbackService) CallbackCreateServiceDescribe() tgbot.ViewFunc {
 			}
 
 			serviceDescribe := &entity.ServiceDescribe{
-				Name:      data[0].(string),
-				Describe:  data[1].(string),
+				Name:      data[1].(string),
+				Describe:  data[0].(string),
 				ServiceID: id,
 			}
 

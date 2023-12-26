@@ -62,13 +62,13 @@ func (s *serviceDescribeRepo) Delete(ctx context.Context, id int) error {
 }
 
 func (s *serviceDescribeRepo) Get(ctx context.Context, id int) (*entity.ServiceDescribe, error) {
-	query := `select sd.id, sd.id_service,sd.describe,s.name, sb.name from service_describe sd
+	query := `select sd.id, sd.id_service,sd.describe,s.name, sd.name from service_describe sd
             	join service s on s.id = sd.id_service
             where sd.id = $1`
-	var sd *entity.ServiceDescribe
+	var sd entity.ServiceDescribe
 
 	err := s.Pool.QueryRow(ctx, query, id).Scan(&sd.ID, &sd.ServiceID, &sd.Describe, &sd.Service.Name, &sd.Name)
-	return sd, err
+	return &sd, err
 }
 
 func (s *serviceDescribeRepo) GetAll(ctx context.Context) ([]entity.ServiceDescribe, error) {
