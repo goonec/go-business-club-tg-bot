@@ -46,11 +46,14 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	businessClusterRepo := repo.NewBusinessClusterRepository(psql)
 	businessClusterResidentRepo := repo.NewBusinessClusterResidentRepository(psql)
 	scheduleRepo := repo.NewScheduleRepo(psql)
+	serviceRepo := repo.NewServiceRepo(psql)
+	serviceDescribeRepo := repo.NewServiceDescribeRepo(psql)
 
 	residentUsecase := usecase.NewResidentUsecase(residentRepo, businessClusterRepo, businessClusterResidentRepo)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 	businessClusterUsecase := usecase.NewBusinessClusterUsecase(businessClusterRepo, businessClusterResidentRepo)
 	scheduleUsecase := usecase.NewScheduleUsecase(scheduleRepo)
+	serviceUsecase := usecase.NewServiceUsecase(serviceRepo, serviceDescribeRepo)
 
 	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh, transportСhResident)
 	scheduleView := view.NewViewSchedule(scheduleUsecase, log, transportСhSchedule)
@@ -59,6 +62,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	residentCallback := callback.NewCallbackResident(residentUsecase, log, store)
 	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, residentUsecase, log, store)
 	scheduleCallback := callback.NewCallbackSchedule(scheduleUsecase, log)
+	serviceCallback := callback.NewCallbackService(serviceUsecase, log)
 
 	newBot := tgbot.NewBot(bot, store, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, cfg.Chat.ChatID)
 	newBot.RegisterCommandView("admin", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewAdminCommand()))
@@ -82,6 +86,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandCallback("resident", residentCallback.CallbackShowAllResident())
 	newBot.RegisterCommandCallback("chat_gpt", residentCallback.CallbackStartChatGPT())
 	newBot.RegisterCommandCallback("schedule", scheduleCallback.CallbackGetSchedule())
+	newBot.RegisterCommandCallback("service_list", serviceCallback.ViewShowAllService())
 
 	newBot.RegisterCommandCallback("main_menu", residentCallback.CallbackStartButton())
 

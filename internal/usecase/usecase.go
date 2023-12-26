@@ -31,3 +31,12 @@ type Schedule interface {
 	CreateSchedule(ctx context.Context, file string) error
 	GetSchedule(ctx context.Context) (*entity.Schedule, error)
 }
+
+type Service interface {
+	CreateService(ctx context.Context, service *entity.Service) error
+	CreateServiceDescribe(ctx context.Context, service *entity.ServiceDescribe) error
+	DeleteService(ctx context.Context, id int) error
+	DeleteServiceDescribe(ctx context.Context, id int) error
+	GetAllService(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error)
+	GetAllServiceDescribe(ctx context.Context, serviceID int) (*tgbotapi.InlineKeyboardMarkup, error)
+}

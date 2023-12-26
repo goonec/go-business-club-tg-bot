@@ -66,3 +66,4 @@ create table if not exists service_describe(
         references service (id) on delete cascade,
     primary key (id)
 );
+

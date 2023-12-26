@@ -11,7 +11,9 @@ var (
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Показать раписание 🗓", "schedule")),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")))
+			tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Список услуг", "service_list")))
 
 	MainMenuButton = tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
 )
