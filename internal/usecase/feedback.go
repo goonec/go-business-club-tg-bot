@@ -17,7 +17,7 @@ func NewFeedbackUsecase(feedbackRepo repo.Feedback) Feedback {
 }
 
 func (f *feedbackUsecase) GetAllFeedback(ctx context.Context) ([]entity.Feedback, error) {
-	panic("implement me")
+	return f.feedbackRepo.GetAll(ctx)
 }
 
 func (f *feedbackUsecase) DeleteFeedback(ctx context.Context, id int) error {

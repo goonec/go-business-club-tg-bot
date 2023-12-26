@@ -40,6 +40,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	transportCh := make(chan map[int64]map[string][]string, 1)
 	transportСhResident := make(chan map[int64]map[string][]string, 1)
 	transportСhSchedule := make(chan map[int64]map[string][]string, 1)
+	transportChFeedback := make(chan map[int64][]string, 1000)
 
 	residentRepo := repo.NewResidentRepository(psql)
 	userRepo := repo.NewUserRepository(psql)
@@ -48,25 +49,28 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	scheduleRepo := repo.NewScheduleRepo(psql)
 	serviceRepo := repo.NewServiceRepo(psql)
 	serviceDescribeRepo := repo.NewServiceDescribeRepo(psql)
-	//feedbackRepo := repo.NewFeedbackRepo(psql)
+	feedbackRepo := repo.NewFeedbackRepo(psql)
 
 	residentUsecase := usecase.NewResidentUsecase(residentRepo, businessClusterRepo, businessClusterResidentRepo)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 	businessClusterUsecase := usecase.NewBusinessClusterUsecase(businessClusterRepo, businessClusterResidentRepo)
 	scheduleUsecase := usecase.NewScheduleUsecase(scheduleRepo)
 	serviceUsecase := usecase.NewServiceUsecase(serviceRepo, serviceDescribeRepo)
+	feedbackUsecase := usecase.NewFeedbackUsecase(feedbackRepo)
 
 	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh, transportСhResident)
 	scheduleView := view.NewViewSchedule(scheduleUsecase, log, transportСhSchedule)
 	clusterView := view.NewViewCluster(businessClusterUsecase, log)
 	serviceView := view.NewViewService(serviceUsecase, store, log)
+	feedbackView := view.NewViewFeedback(feedbackUsecase, log)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log, store)
 	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, residentUsecase, log, store)
 	scheduleCallback := callback.NewCallbackSchedule(scheduleUsecase, log)
 	serviceCallback := callback.NewCallbackService(serviceUsecase, store, log)
+	feedbackCallback := callback.NewCallbackFeedback(feedbackUsecase, transportChFeedback, log)
 
-	newBot := tgbot.NewBot(bot, store, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, cfg.Chat.ChatID)
+	newBot := tgbot.NewBot(bot, store, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, transportChFeedback, cfg.Chat.ChatID)
 	newBot.RegisterCommandView("admin", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewAdminCommand()))
 	newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResident()))
 	newBot.RegisterCommandView("create_resident_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResidentPhoto()))
@@ -77,6 +81,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("delete_cluster", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewDeleteCluster()))
 	newBot.RegisterCommandView("create_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateService()))
 	newBot.RegisterCommandView("create_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateUnderService()))
+	newBot.RegisterCommandView("get_feedback", middleware.AdminMiddleware(cfg.Chat.ChatID, feedbackView.CallbackGetFeedback()))
 
 	newBot.RegisterCommandView("start", residentView.ViewStartButton())
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
@@ -91,6 +96,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandCallback("chat_gpt", residentCallback.CallbackStartChatGPT())
 	newBot.RegisterCommandCallback("schedule", scheduleCallback.CallbackGetSchedule())
 	newBot.RegisterCommandCallback("servicelist", serviceCallback.CallbackShowAllService())
+	newBot.RegisterCommandCallback("feedback", feedbackCallback.CallbackCreateFeedback(cfg.Chat.ChatID))
 
 	newBot.RegisterCommandCallback("service", serviceCallback.CallbackShowAllServiceDescribe())
 	newBot.RegisterCommandCallback("servicedescribe", serviceCallback.CallbackShowServiceInfo())

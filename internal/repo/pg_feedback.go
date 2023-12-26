@@ -68,6 +68,7 @@ func (f *feedbackRepo) Create(ctx context.Context, feedback *entity.Feedback) (*
 	err := f.Pool.QueryRow(ctx, query, feedback.Message, feedback.UsernameTG, feedback.Type).Scan(
 		&fb.ID,
 		&fb.Message,
+		&fb.Type,
 		&fb.CreatedAt,
 		&fb.UsernameTG)
 

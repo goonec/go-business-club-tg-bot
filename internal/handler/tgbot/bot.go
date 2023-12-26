@@ -33,6 +33,7 @@ type Bot struct {
 	transportCh         chan map[int64]map[string][]string
 	transportChResident chan map[int64]map[string][]string
 	transportChSchedule chan map[int64]map[string][]string
+	transportChFeedback chan map[int64][]string
 
 	mu sync.RWMutex
 }
@@ -82,6 +83,7 @@ func NewBot(api *tgbotapi.BotAPI,
 	transportCh chan map[int64]map[string][]string,
 	transportChResident chan map[int64]map[string][]string,
 	transportChSchedule chan map[int64]map[string][]string,
+	transportChFeedback chan map[int64][]string,
 	channelID int64) *Bot {
 	return &Bot{
 		api:                 api,
@@ -92,6 +94,7 @@ func NewBot(api *tgbotapi.BotAPI,
 		transportCh:         transportCh,
 		transportChResident: transportChResident,
 		transportChSchedule: transportChSchedule,
+		transportChFeedback: transportChFeedback,
 		channelID:           channelID,
 	}
 }
@@ -196,6 +199,14 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 				end := time.Since(start)
 				b.log.Info("[%s] Время ответа: %f", update.Message.From.UserName, end.Seconds())
 			}()
+			return
+		}
+
+		// Обратная связь пользователей
+		if _, ok := b.readCommand(update.Message.Chat.ID, "feedback"); ok {
+			fb := []string{update.Message.Text}
+			b.transportChFeedback <- map[int64][]string{update.Message.Chat.ID: fb}
+			b.delete(update.Message.Chat.ID)
 			return
 		}
 
