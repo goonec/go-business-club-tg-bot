@@ -44,3 +44,9 @@ func (c *callbackService) ViewShowAllService() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+//func (c *callbackService) ViewShowAllServiceDescribe() tgbot.ViewFunc {
+//	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+//
+//	}
+//}

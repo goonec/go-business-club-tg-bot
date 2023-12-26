@@ -40,3 +40,8 @@ type Service interface {
 	GetAllService(ctx context.Context) (*tgbotapi.InlineKeyboardMarkup, error)
 	GetAllServiceDescribe(ctx context.Context, serviceID int) (*tgbotapi.InlineKeyboardMarkup, error)
 }
+
+type Feedback interface {
+	GetAllFeedback(ctx context.Context) ([]entity.Feedback, error)
+	DeleteFeedback(ctx context.Context, id int) error
+}

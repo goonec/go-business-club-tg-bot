@@ -93,9 +93,9 @@ func (s *serviceUsecase) createServiceMarkup(service []entity.Service, command s
 	}
 
 	mainMenuButton := tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
-	feedbackButton := tgbotapi.NewInlineKeyboardButtonData("Оставить обратную связь", "feedback")
+	//feedbackButton := tgbotapi.NewInlineKeyboardButtonData("Оставить обратную связь", "feedback")
 	rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
-	rows = append(rows, []tgbotapi.InlineKeyboardButton{feedbackButton})
+	//rows = append(rows, []tgbotapi.InlineKeyboardButton{feedbackButton})
 
 	markup := tgbotapi.NewInlineKeyboardMarkup(rows...)
 

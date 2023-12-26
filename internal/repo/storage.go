@@ -48,3 +48,9 @@ type ServiceDescribe interface {
 	Delete(ctx context.Context, id int) error
 	GetAllByServiceID(ctx context.Context, serviceID int) ([]entity.ServiceDescribe, error)
 }
+
+type Feedback interface {
+	GetAll(ctx context.Context) ([]entity.Feedback, error)
+	Delete(ctx context.Context, id int) error
+	Create(ctx context.Context, feedback *entity.Feedback) (*entity.Feedback, error)
+}

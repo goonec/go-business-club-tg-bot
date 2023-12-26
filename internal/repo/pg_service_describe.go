@@ -17,14 +17,14 @@ func NewServiceDescribeRepo(pg *postgres.Postgres) ServiceDescribe {
 }
 
 func (s *serviceDescribeRepo) Create(ctx context.Context, service *entity.ServiceDescribe) error {
-	query := `insert into service_describe (id_service,describe) values ($1,$2)`
+	query := `insert into service_describe (id_service,name,describe) values ($1,$2)`
 
 	_, err := s.Pool.Exec(ctx, query, service.ServiceID, service.Describe)
 	return err
 }
 
 func (s *serviceDescribeRepo) GetAllByServiceID(ctx context.Context, serviceID int) ([]entity.ServiceDescribe, error) {
-	query := `select sd.id, sd.id_service,sd.describe,s.name from service_describe sd
+	query := `select sd.id, sd.id_service,sd.describe,s.name sb.name from service_describe sd
             	join service s on s.id = sd.id_service
             where sd.id_service = $1`
 
@@ -40,7 +40,7 @@ func (s *serviceDescribeRepo) GetAllByServiceID(ctx context.Context, serviceID i
 	for rows.Next() {
 		var s entity.ServiceDescribe
 
-		err := rows.Scan(&s.ID, &s.ServiceID, &s.Describe, &s.Service.Name)
+		err := rows.Scan(&s.ID, &s.ServiceID, &s.Describe, &s.Service.Name, &s.Name)
 		if err != nil {
 			return nil, err
 		}

@@ -48,6 +48,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	scheduleRepo := repo.NewScheduleRepo(psql)
 	serviceRepo := repo.NewServiceRepo(psql)
 	serviceDescribeRepo := repo.NewServiceDescribeRepo(psql)
+	//feedbackRepo := repo.NewFeedbackRepo(psql)
 
 	residentUsecase := usecase.NewResidentUsecase(residentRepo, businessClusterRepo, businessClusterResidentRepo)
 	userUsecase := usecase.NewUserUsecase(userRepo)
