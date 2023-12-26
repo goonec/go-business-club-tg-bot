@@ -6,10 +6,11 @@ type Service struct {
 }
 
 type ServiceDescribe struct {
-	ID        int    `json:"id"`
-	ServiceID int    `json:"id_service"`
-	Name      string `json:"name"`
-	Describe  string `json:"describe"`
+	ID          int    `json:"id"`
+	ServiceID   int    `json:"id_service"`
+	Name        string `json:"name"`
+	Describe    string `json:"describe"`
+	PhotoFileID string `json:"photo_file_id"`
 
 	Service Service `json:"service"`
 }

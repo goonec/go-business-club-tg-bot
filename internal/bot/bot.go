@@ -110,6 +110,8 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	newBot.RegisterCommandCallback("servicecreate", serviceCallback.CallbackCreateServiceDescribe())
 
+	//newBot.RegisterCommandCallback("pptx")
+
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 

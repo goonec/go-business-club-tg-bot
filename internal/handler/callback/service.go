@@ -150,6 +150,7 @@ func (c *callbackService) CallbackCreateServiceDescribe() tgbot.ViewFunc {
 				c.log.Error("failed to send message: %v", err)
 				return err
 			}
+
 		} else {
 			msg := tgbotapi.NewMessage(update.FromChat().ID, "Произошла ошибика на сервере, попробуйте применить команду /cancel и заново добавить данные")
 			if _, err := bot.Send(msg); err != nil {
@@ -160,3 +161,22 @@ func (c *callbackService) CallbackCreateServiceDescribe() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+//func (c *callbackService) CallbackShowPPTX() tgbot.ViewFunc {
+//	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+//
+//		fileID := tgbotapi.FileID(dataFile)
+//		msg := tgbotapi.DocumentConfig{
+//			ParseMode: tgbotapi.ModeHTML,
+//			BaseFile: tgbotapi.BaseFile{
+//				BaseChat: tgbotapi.BaseChat{
+//					ChatID:      update.CallbackQuery.Message.Chat.ID,
+//					ReplyMarkup: &handler.StartMenu,
+//				},
+//				File: fileID,
+//			},
+//		}
+//
+//		msg.Caption = fmt.Sprintf()
+//	}
+//}

@@ -67,6 +67,11 @@ func (c *callbackFeedback) CallbackCreateFeedback(chatID int64) tgbot.ViewFunc {
 						return
 					}
 
+					msg := tgbotapi.NewMessage(update.FromChat().ID, "Заявка оставлена успешно")
+					if _, err := bot.Send(msg); err != nil {
+						c.log.Error("failed to send message: %v", err)
+						return
+					}
 					//c.sendFeedbackToAdmin(context.TODO(), feedback, chatID, bot)
 					return
 				}

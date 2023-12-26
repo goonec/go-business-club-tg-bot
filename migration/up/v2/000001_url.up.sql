@@ -62,6 +62,7 @@ create table if not exists service_describe(
     id int generated always as identity,
     id_service int,
     name text not null,
+    photo_file_id varchar(150) null,
     describe text not null,
     foreign key (id_service)
         references service (id) on delete cascade,
