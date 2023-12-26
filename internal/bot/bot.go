@@ -58,6 +58,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh, transportСhResident)
 	scheduleView := view.NewViewSchedule(scheduleUsecase, log, transportСhSchedule)
 	clusterView := view.NewViewCluster(businessClusterUsecase, log)
+	serviceView := view.NewViewService(serviceUsecase, log)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log, store)
 	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, residentUsecase, log, store)
@@ -73,6 +74,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("create_schedule", middleware.AdminMiddleware(cfg.Chat.ChatID, scheduleView.ViewCreateSchedule()))
 	newBot.RegisterCommandView("create_cluster", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewCreateCluster()))
 	newBot.RegisterCommandView("delete_cluster", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewDeleteCluster()))
+	newBot.RegisterCommandView("create_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateService()))
 
 	newBot.RegisterCommandView("start", residentView.ViewStartButton())
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())

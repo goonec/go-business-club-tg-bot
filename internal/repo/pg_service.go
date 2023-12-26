@@ -25,10 +25,10 @@ func (s *serviceRepo) Delete(ctx context.Context, id int) error {
 	return err
 }
 
-func (s *serviceRepo) Create(ctx context.Context, service *entity.Service) error {
+func (s *serviceRepo) Create(ctx context.Context, name string) error {
 	query := `insert into service (name) values ($1)`
 
-	_, err := s.Pool.Exec(ctx, query, service.Name)
+	_, err := s.Pool.Exec(ctx, query, name)
 	return err
 }
 

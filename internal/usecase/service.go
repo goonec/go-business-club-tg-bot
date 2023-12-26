@@ -21,8 +21,8 @@ func NewServiceUsecase(serviceRepo repo.Service, serviceDescribeRepo repo.Servic
 	}
 }
 
-func (s *serviceUsecase) CreateService(ctx context.Context, service *entity.Service) error {
-	err := s.serviceRepo.Create(ctx, service)
+func (s *serviceUsecase) CreateService(ctx context.Context, name string) error {
+	err := s.serviceRepo.Create(ctx, name)
 	if err != nil {
 		errCode := repo.ErrorCode(err)
 		if errCode == repo.ForeignKeyViolation {
@@ -94,7 +94,8 @@ func (s *serviceUsecase) createServiceMarkup(service []entity.Service, command s
 
 	mainMenuButton := tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
 	feedbackButton := tgbotapi.NewInlineKeyboardButtonData("Оставить обратную связь", "feedback")
-	rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton, feedbackButton})
+	rows = append(rows, []tgbotapi.InlineKeyboardButton{mainMenuButton})
+	rows = append(rows, []tgbotapi.InlineKeyboardButton{feedbackButton})
 
 	markup := tgbotapi.NewInlineKeyboardMarkup(rows...)
 

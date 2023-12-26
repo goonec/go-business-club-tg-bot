@@ -37,7 +37,7 @@ type Schedule interface {
 }
 
 type Service interface {
-	Create(ctx context.Context, service *entity.Service) error
+	Create(ctx context.Context, name string) error
 	Get(ctx context.Context, id int) (*entity.Service, error)
 	GetAll(ctx context.Context) ([]entity.Service, error)
 	Delete(ctx context.Context, id int) error
