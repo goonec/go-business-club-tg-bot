@@ -65,7 +65,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh, transportСhResident)
 	scheduleView := view.NewViewSchedule(scheduleUsecase, log, transportСhSchedule)
 	clusterView := view.NewViewCluster(businessClusterUsecase, log)
-	serviceView := view.NewViewService(serviceUsecase, store, log, transportPptx, transportPhoto, psql)
+	serviceView := view.NewViewService(serviceUsecase, pptxUsecase, store, log, transportPptx, transportPhoto)
 	feedbackView := view.NewViewFeedback(feedbackUsecase, log)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log, store)
@@ -86,8 +86,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("create_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateService()))
 	newBot.RegisterCommandView("create_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateUnderService()))
 	newBot.RegisterCommandView("get_feedback", middleware.AdminMiddleware(cfg.Chat.ChatID, feedbackView.ViewGetFeedback()))
-	//newBot.RegisterCommandView("create_service_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePhotoServiceDescribe()))
-	newBot.RegisterCommandView("create_pptx", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePptx())) // only developer
+	newBot.RegisterCommandView("update_pptx", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePptx()))
 	newBot.RegisterCommandView("delete_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewDeleteService()))
 	newBot.RegisterCommandView("delete_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewDeleteUnderService()))
 

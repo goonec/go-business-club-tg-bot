@@ -7,6 +7,7 @@ import (
 
 type Pptx interface {
 	Get(ctx context.Context) (string, error)
+	Update(ctx context.Context, fileID string) error
 }
 
 type pptxRepo struct {
@@ -25,4 +26,16 @@ func (p *pptxRepo) Get(ctx context.Context) (string, error) {
 
 	err := p.Pool.QueryRow(ctx, query).Scan(&pptx)
 	return pptx, err
+}
+
+func (p *pptxRepo) Update(ctx context.Context, fileID string) error {
+	query := `update pptx set pptx_file_id = $1 where pptx_file_id = $2`
+
+	file, err := p.Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = p.Pool.Exec(ctx, query, fileID, file)
+	return err
 }

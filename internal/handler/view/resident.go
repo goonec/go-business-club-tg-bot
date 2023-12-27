@@ -70,7 +70,8 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 			"\n}\n" +
 			"/get_feedback - получить обратные отзывы\n" +
 			"/delete_service - удаления услуги\n" +
-			"/delete_under_service - удаление раздела услуги")
+			"/delete_under_service - удаление раздела услуги\n" +
+			`/update_pptx - изменить вводный файл в разделе "О нас"`)
 
 		textService := "/create_service\n" +
 			"{\n" +

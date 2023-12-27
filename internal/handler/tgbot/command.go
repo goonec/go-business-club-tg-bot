@@ -45,11 +45,11 @@ func (b *Bot) IsCommandText(text string, userID int64) *bool {
 			b.stateStore[userID]["/notify"] = []string{}
 		}
 		return &[]bool{true}[0]
-	case "/create_pptx":
+	case "/update_pptx":
 		_, ok := b.read(userID)
 		if !ok {
 			b.stateStore[userID] = make(map[string][]string)
-			b.stateStore[userID]["/create_pptx"] = []string{}
+			b.stateStore[userID]["/update_pptx"] = []string{}
 		}
 		return &[]bool{true}[0]
 	case "/create_under_service":

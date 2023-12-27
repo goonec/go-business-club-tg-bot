@@ -314,7 +314,7 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 					b.delete(userID)
 					return false
 				}
-			case "/create_pptx":
+			case "/update_pptx":
 				pptx := update.Message.Document.FileID
 
 				b.log.Info("", pptx)
