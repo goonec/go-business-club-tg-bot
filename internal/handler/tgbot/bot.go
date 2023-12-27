@@ -216,6 +216,13 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			return
 		}
 
+		if _, ok := b.readCommand(update.Message.Chat.ID, "request"); ok {
+			fb := []string{update.Message.Text}
+			b.transportChFeedback <- map[int64][]string{update.Message.Chat.ID: fb}
+			b.delete(update.Message.Chat.ID)
+			return
+		}
+
 		var view ViewFunc
 
 		cmd := update.Message.Command()
@@ -448,7 +455,6 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 					return false
 				}
 			}
-
 		}
 		return true
 	}

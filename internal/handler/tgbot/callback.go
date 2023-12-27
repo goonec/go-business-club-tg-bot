@@ -56,6 +56,17 @@ func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
 			return errors.New("not found in map"), nil
 		}
 		return nil, callbackView
+	case strings.HasPrefix(callbackData, "request"):
+		_, ok := b.read(update.CallbackQuery.Message.Chat.ID)
+		if !ok {
+			b.stateStore[update.CallbackQuery.Message.Chat.ID] = make(map[string][]string)
+			b.stateStore[update.CallbackQuery.Message.Chat.ID]["request"] = []string{}
+		}
+		callbackView, ok := b.callbackView["request"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
 	case strings.HasPrefix(callbackData, "allcluster"):
 		callbackView, ok := b.callbackView["allcluster"]
 		if !ok {
@@ -124,6 +135,12 @@ func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
 		return nil, callbackView
 	case strings.HasPrefix(callbackData, "pptx"):
 		callbackView, ok := b.callbackView["pptx"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
+	case strings.HasPrefix(callbackData, "instruction"):
+		callbackView, ok := b.callbackView["instruction"]
 		if !ok {
 			return errors.New("not found in map"), nil
 		}

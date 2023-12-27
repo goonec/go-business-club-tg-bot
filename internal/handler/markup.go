@@ -13,9 +13,13 @@ var (
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Презентация клуба", "pptx")),
+			tgbotapi.NewInlineKeyboardButtonData("Оставить заявку на вступление", "request")),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Услуги AVANTI GROUP", "servicelist")))
+			tgbotapi.NewInlineKeyboardButtonData("О нас", "pptx")),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Услуги AVANTI GROUP", "servicelist")),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Инструкция к боту", "instruction")))
 
 	MainMenuButton = tgbotapi.NewInlineKeyboardButtonData("Вернуться к списку команд ⬆️", "main_menu")
 

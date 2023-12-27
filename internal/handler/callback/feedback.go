@@ -42,7 +42,7 @@ func (c *callbackFeedback) CallbackCreateFeedback(chatID int64) tgbot.ViewFunc {
 
 			select {
 			case d, exist := <-c.transportChFeedback:
-				c.log.Info("", d, exist)
+				c.log.Info("feedback", d, exist)
 				data := d[update.CallbackQuery.Message.Chat.ID]
 				if exist {
 					if data == nil || len(data) == 0 {
@@ -79,6 +79,63 @@ func (c *callbackFeedback) CallbackCreateFeedback(chatID int64) tgbot.ViewFunc {
 				return
 			}
 		}(chatID)
+		return nil
+	}
+}
+
+func (c *callbackFeedback) CallbackMembershipRequest() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "Пожалуйста, пришлите нам ваше ФИО, номер телефона и вид деятельности. Мы свяжемся с вами в ближайшее время!")
+		if _, err := bot.Send(msg); err != nil {
+			c.log.Error("failed to send message: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		go func() {
+			subCtx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
+			defer cancel()
+
+			select {
+			case d, exist := <-c.transportChFeedback:
+				c.log.Info("membership request", d, exist)
+				data := d[update.CallbackQuery.Message.Chat.ID]
+				if exist {
+					if data == nil || len(data) == 0 {
+						msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, boterror.ParseErrToText(boterror.ErrInternalError))
+						c.log.Error("ViewCreateResidentPhoto: data == nil || len(data) == 0: %v", boterror.ErrInternalError)
+						if _, err := bot.Send(msg); err != nil {
+							c.log.Error("%v")
+						}
+						return
+					}
+
+					fb := &entity.Feedback{
+						Message:    data[0],
+						UsernameTG: update.CallbackQuery.From.UserName,
+						Type:       "заявка на вступление",
+					}
+
+					_, err := c.feedbackUsecase.CreateFeedback(context.TODO(), fb)
+					if err != nil {
+						c.log.Error("feedbackUsecase.CreateFeedback: %v", err)
+						handler.HandleError(bot, update, boterror.ParseErrToText(err))
+						return
+					}
+
+					msg := tgbotapi.NewMessage(update.FromChat().ID, "Заявка оставлена успешно")
+					if _, err := bot.Send(msg); err != nil {
+						c.log.Error("failed to send message: %v", err)
+						return
+					}
+					//c.sendFeedbackToAdmin(context.TODO(), feedback, chatID, bot)
+					return
+				}
+			case <-subCtx.Done():
+				return
+			}
+		}()
+
 		return nil
 	}
 }

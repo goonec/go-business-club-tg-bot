@@ -102,6 +102,8 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandCallback("chat_gpt", residentCallback.CallbackStartChatGPT())
 	newBot.RegisterCommandCallback("schedule", scheduleCallback.CallbackGetSchedule())
 	newBot.RegisterCommandCallback("servicelist", serviceCallback.CallbackShowAllService())
+	newBot.RegisterCommandCallback("request", feedbackCallback.CallbackMembershipRequest())
+	newBot.RegisterCommandCallback("instruction", residentCallback.CallbackShowInstruction())
 	newBot.RegisterCommandCallback("feedback", feedbackCallback.CallbackCreateFeedback(cfg.Chat.ChatID))
 
 	newBot.RegisterCommandCallback("pptx", serviceCallback.CallbackShowPPTX())

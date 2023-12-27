@@ -171,3 +171,15 @@ func (c *callbackResident) CallbackShowResidentByCluster() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+func (c *callbackResident) CallbackShowInstruction() tgbot.ViewFunc {
+	return func(CallbackShowInstruction context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		text := "/start – список всех доступных команд\n\"Запустить Chat GPT\" – начать общение с искусственным интеллектом “AVANTI”\n\"Список кластеров\" – посмотреть список кластеров с резидентами бизнес клуба Avanti\n\"Показать расписание\" – посмотреть расписание мероприятий бизнес клуба “AVANTI”\n\"Список резидентов\" – посмотреть всех резидентов бизнес клуба “AVANTI”\n\"О нас\" – информация о бизнес клубе “AVANTI”\n\"Услуги AVANTI GROUP\" – список всех услуг предоставляемых бизнес клубом “AVANTI”\n\"Оставить заявку на вступление\" –  оставить заявку на вступление в бизнес клуб “AVANTI”\n\"Инструкция к боту\" – посмотреть список команд и описание к ним"
+
+		_, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID, text))
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
