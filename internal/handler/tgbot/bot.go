@@ -35,6 +35,7 @@ type Bot struct {
 	transportChSchedule chan map[int64]map[string][]string
 	transportChFeedback chan map[int64][]string
 	transportPptx       chan map[int64]map[string][]string
+	transportPhoto      chan map[int64]map[string][]string
 
 	mu sync.RWMutex
 }
@@ -86,6 +87,7 @@ func NewBot(api *tgbotapi.BotAPI,
 	transportChSchedule chan map[int64]map[string][]string,
 	transportChFeedback chan map[int64][]string,
 	transportPptx chan map[int64]map[string][]string,
+	transportPhoto chan map[int64]map[string][]string,
 	channelID int64) *Bot {
 	return &Bot{
 		api:                 api,
@@ -98,6 +100,7 @@ func NewBot(api *tgbotapi.BotAPI,
 		transportChSchedule: transportChSchedule,
 		transportChFeedback: transportChFeedback,
 		transportPptx:       transportPptx,
+		transportPhoto:      transportPhoto,
 		channelID:           channelID,
 	}
 }
@@ -270,6 +273,40 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 	if ok {
 		for key, value := range s {
 			switch key {
+			case "/create_under_service":
+				switch {
+				case len(value) == 0:
+					photo := update.Message.Photo
+					if len(photo) > 0 {
+						largestPhoto := photo[len(photo)-1]
+
+						fileID := largestPhoto.FileID
+						b.set(fileID, key, userID)
+					} else {
+						b.delete(userID)
+
+						msg := tgbotapi.NewMessage(userID, "Не является изображением [1].")
+						if _, err := b.api.Send(msg); err != nil {
+							b.log.Error("failed to send message: %v", err)
+						}
+						return false
+					}
+
+					msg := tgbotapi.NewMessage(userID, "[2] Загрузите информцию о услуги в формате, как представлено на примере.")
+					if _, err := b.api.Send(msg); err != nil {
+						b.log.Error("failed to send message: %v", err)
+					}
+
+					return false
+				case len(value) == 1:
+					b.set(text, key, userID)
+
+					d, _ := b.read(userID)
+					b.transportPhoto <- map[int64]map[string][]string{userID: d}
+
+					b.delete(userID)
+					return false
+				}
 			case "/create_pptx":
 				pptx := update.Message.Document.FileID
 

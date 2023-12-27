@@ -52,6 +52,13 @@ func (b *Bot) IsCommandText(text string, userID int64) *bool {
 			b.stateStore[userID]["/create_pptx"] = []string{}
 		}
 		return &[]bool{true}[0]
+	case "/create_under_service":
+		_, ok := b.read(userID)
+		if !ok {
+			b.stateStore[userID] = make(map[string][]string)
+			b.stateStore[userID]["/create_under_service"] = []string{}
+		}
+		return &[]bool{true}[0]
 	//case "/chat_gpt":
 	//	_, ok := b.read(userID)
 	//	if !ok {

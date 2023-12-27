@@ -24,9 +24,9 @@ func (s *serviceDescribeRepo) CreatePhoto(ctx context.Context, id int, fileID st
 }
 
 func (s *serviceDescribeRepo) Create(ctx context.Context, service *entity.ServiceDescribe) error {
-	query := `insert into service_describe (id_service,name,describe) values ($1,$2,$3,$4)`
+	query := `insert into service_describe (id_service,name,describe,photo_file_id) values ($1,$2,$3,$4)`
 
-	_, err := s.Pool.Exec(ctx, query, service.ServiceID, service.Describe, service.Name)
+	_, err := s.Pool.Exec(ctx, query, service.ServiceID, service.Describe, service.Name, service.PhotoFileID)
 	return err
 }
 
@@ -69,12 +69,12 @@ func (s *serviceDescribeRepo) Delete(ctx context.Context, id int) error {
 }
 
 func (s *serviceDescribeRepo) Get(ctx context.Context, id int) (*entity.ServiceDescribe, error) {
-	query := `select sd.id, sd.id_service,sd.describe,s.name, sd.name from service_describe sd
+	query := `select sd.id, sd.id_service,sd.describe,s.name, sd.name,sd.photo_file_id from service_describe sd
             	join service s on s.id = sd.id_service
             where sd.id = $1`
 	var sd entity.ServiceDescribe
 
-	err := s.Pool.QueryRow(ctx, query, id).Scan(&sd.ID, &sd.ServiceID, &sd.Describe, &sd.Service.Name, &sd.Name)
+	err := s.Pool.QueryRow(ctx, query, id).Scan(&sd.ID, &sd.ServiceID, &sd.Describe, &sd.Service.Name, &sd.Name, &sd.PhotoFileID)
 	return &sd, err
 }
 

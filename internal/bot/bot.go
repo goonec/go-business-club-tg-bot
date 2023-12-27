@@ -42,6 +42,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	transportСhSchedule := make(chan map[int64]map[string][]string, 1)
 	transportChFeedback := make(chan map[int64][]string, 1000)
 	transportPptx := make(chan map[int64]map[string][]string, 1)
+	transportPhoto := make(chan map[int64]map[string][]string, 10)
 
 	residentRepo := repo.NewResidentRepository(psql)
 	userRepo := repo.NewUserRepository(psql)
@@ -64,7 +65,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	residentView := view.NewViewResident(residentUsecase, userUsecase, log, transportCh, transportСhResident)
 	scheduleView := view.NewViewSchedule(scheduleUsecase, log, transportСhSchedule)
 	clusterView := view.NewViewCluster(businessClusterUsecase, log)
-	serviceView := view.NewViewService(serviceUsecase, store, log, transportPptx, psql)
+	serviceView := view.NewViewService(serviceUsecase, store, log, transportPptx, transportPhoto, psql)
 	feedbackView := view.NewViewFeedback(feedbackUsecase, log)
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log, store)
@@ -73,7 +74,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	serviceCallback := callback.NewCallbackService(serviceUsecase, pptxUsecase, store, log)
 	feedbackCallback := callback.NewCallbackFeedback(feedbackUsecase, transportChFeedback, log)
 
-	newBot := tgbot.NewBot(bot, store, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, transportChFeedback, transportPptx, cfg.Chat.ChatID)
+	newBot := tgbot.NewBot(bot, store, log, openaiRequest, userUsecase, transportCh, transportСhResident, transportСhSchedule, transportChFeedback, transportPptx, transportPhoto, cfg.Chat.ChatID)
 	newBot.RegisterCommandView("admin", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewAdminCommand()))
 	newBot.RegisterCommandView("create_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResident()))
 	newBot.RegisterCommandView("create_resident_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, residentView.ViewCreateResidentPhoto()))
@@ -85,8 +86,8 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("create_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateService()))
 	newBot.RegisterCommandView("create_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateUnderService()))
 	newBot.RegisterCommandView("get_feedback", middleware.AdminMiddleware(cfg.Chat.ChatID, feedbackView.CallbackGetFeedback()))
-	newBot.RegisterCommandView("create_service_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePhotoServiceDescribe()))
-	newBot.RegisterCommandView("create_pptx", serviceView.ViewCreatePptx())
+	//newBot.RegisterCommandView("create_service_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePhotoServiceDescribe()))
+	newBot.RegisterCommandView("create_pptx", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePptx()))
 
 	newBot.RegisterCommandView("start", residentView.ViewStartButton())
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())

@@ -39,10 +39,10 @@ func (c *callbackService) CallbackShowAllService() tgbot.ViewFunc {
 			return nil
 		}
 
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "Выбирете услугу")
+		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "Выбирете услугу")
 
 		msg.ParseMode = tgbotapi.ModeHTML
-		msg.ReplyMarkup = &serviceMarkup
+		msg.ReplyMarkup = serviceMarkup
 		if _, err := bot.Send(msg); err != nil {
 			c.log.Error("failed to send message: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
@@ -106,14 +106,8 @@ func (c *callbackService) CallbackShowServiceInfo() tgbot.ViewFunc {
 		poster := tgbotapi.FileID(serviceDescribe.PhotoFileID)
 		photoMedia := tgbotapi.NewInputMediaPhoto(poster)
 
-		msg := tgbotapi.EditMessageMediaConfig{
-			BaseEdit: tgbotapi.BaseEdit{
-				ChatID:    update.CallbackQuery.Message.Chat.ID,
-				MessageID: update.CallbackQuery.Message.MessageID,
-			}, Media: photoMedia,
-		}
-
-		//msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, builder.String())
+		msg := tgbotapi.NewPhoto(update.CallbackQuery.Message.Chat.ID, photoMedia.Media)
+		msg.Caption = builder.String()
 
 		serviceDescribeMarkup := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(handler.FeedbackButton),
 			tgbotapi.NewInlineKeyboardRow(handler.MainMenuButton))
@@ -142,9 +136,10 @@ func (c *callbackService) CallbackCreateServiceDescribe() tgbot.ViewFunc {
 			}
 
 			serviceDescribe := &entity.ServiceDescribe{
-				Name:      data[1].(string),
-				Describe:  data[0].(string),
-				ServiceID: id,
+				Name:        data[1].(string),
+				Describe:    data[0].(string),
+				PhotoFileID: data[2].(string),
+				ServiceID:   id,
 			}
 
 			err := c.serviceUsecase.CreateServiceDescribe(ctx, serviceDescribe)

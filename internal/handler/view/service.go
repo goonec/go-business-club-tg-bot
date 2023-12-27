@@ -18,17 +18,23 @@ type viewService struct {
 	serviceUsecase usecase.Service
 	store          *localstore.Store
 
-	transportPptx chan map[int64]map[string][]string
-	log           *logger.Logger
-	pg            *postgres.Postgres
+	transportPptx  chan map[int64]map[string][]string
+	transportPhoto chan map[int64]map[string][]string
+	log            *logger.Logger
+	pg             *postgres.Postgres
 }
 
-func NewViewService(serviceUsecase usecase.Service, store *localstore.Store, log *logger.Logger, transportPptx chan map[int64]map[string][]string, pg *postgres.Postgres) *viewService {
+func NewViewService(serviceUsecase usecase.Service,
+	store *localstore.Store, log *logger.Logger,
+	transportPptx chan map[int64]map[string][]string,
+	transportPhoto chan map[int64]map[string][]string,
+	pg *postgres.Postgres) *viewService {
 	return &viewService{
 		serviceUsecase: serviceUsecase,
 		store:          store,
 		log:            log,
 		transportPptx:  transportPptx,
+		transportPhoto: transportPhoto,
 		pg:             pg,
 	}
 }
@@ -63,49 +69,83 @@ func (v *viewService) ViewCreateService() tgbot.ViewFunc {
 }
 
 func (v *viewService) ViewCreateUnderService() tgbot.ViewFunc {
-	type addServiceDescribe struct {
-		Name     string `json:"under_service_name"`
-		Describe string `json:"describe"`
-	}
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		userID := update.Message.Chat.ID
-		data, exist := v.store.Read(userID)
-		if !exist {
-			args, err := parser.ParseJSON[addServiceDescribe](update.Message.CommandArguments())
-			if err != nil {
-				v.log.Error("ParseJSON: %v", err)
-				v.store.Delete(userID)
-				handler.HandleError(bot, update, boterror.ParseErrToText(err))
-				return nil
-			}
-
-			data = []interface{}{args.Name, args.Describe}
-			v.store.Set(data, userID)
-
-			sdMarkup, err := v.serviceUsecase.GetAllService(ctx, "create")
-			if err != nil {
-				v.log.Error("serviceUsecase.GetAllServiceDescribe: %v", err)
-				v.store.Delete(userID)
-				handler.HandleError(bot, update, boterror.ParseErrToText(err))
-				return nil
-			}
-
-			msg := tgbotapi.NewMessage(update.FromChat().ID, `Выбирите услугу, которой нужно добавить раздел с описанием`)
-			msg.ReplyMarkup = sdMarkup
-			if _, err := bot.Send(msg); err != nil {
-				v.log.Error("%v", err)
-				v.store.Delete(userID)
-				return err
-			}
-		} else {
-			v.store.Delete(userID)
-
-			msg := tgbotapi.NewMessage(update.FromChat().ID, `Произошла ошибка из-за прошлых операций. Попробуйте еще раз.`)
-			if _, err := bot.Send(msg); err != nil {
-				v.log.Error("%v", err)
-				return err
-			}
+		msg := tgbotapi.NewMessage(update.FromChat().ID, `[1] Загрузите изображение для услуги`)
+		if _, err := bot.Send(msg); err != nil {
+			v.log.Error("%v", err)
+			return err
 		}
+
+		go func() {
+			subCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+			userID := update.Message.Chat.ID
+
+			select {
+			case d, ok := <-v.transportPhoto:
+				dataPhoto := d[update.Message.From.ID]["/create_under_service"]
+				if ok {
+					if dataPhoto == nil || len(dataPhoto) == 0 {
+						msg := tgbotapi.NewMessage(update.Message.Chat.ID, boterror.ParseErrToText(boterror.ErrInternalError))
+						v.log.Error("ViewCreateResidentPhoto: data == nil || len(data) == 0: %v", boterror.ErrInternalError)
+						if _, err := bot.Send(msg); err != nil {
+							v.log.Error("%v")
+						}
+						return
+					}
+
+					type addServiceDescribe struct {
+						Name     string `json:"under_service_name"`
+						Describe string `json:"describe"`
+					}
+
+					data, exist := v.store.Read(userID)
+					if !exist {
+						args, err := parser.ParseJSON[addServiceDescribe](dataPhoto[1])
+						if err != nil {
+							v.log.Error("ParseJSON: %v", err)
+							v.store.Delete(userID)
+							handler.HandleError(bot, update, boterror.ParseErrToText(err))
+							return
+						}
+
+						data = []interface{}{args.Name, args.Describe, dataPhoto[0]}
+						v.store.Set(data, userID)
+
+						sdMarkup, err := v.serviceUsecase.GetAllService(context.Background(), "create")
+						if err != nil {
+							v.log.Error("serviceUsecase.GetAllServiceDescribe: %v", err)
+							v.store.Delete(userID)
+							handler.HandleError(bot, update, boterror.ParseErrToText(err))
+							return
+						}
+
+						msg := tgbotapi.NewMessage(update.FromChat().ID, `Выбирите услугу, которой нужно добавить раздел с описанием`)
+						msg.ReplyMarkup = sdMarkup
+						if _, err := bot.Send(msg); err != nil {
+							v.log.Error("%v", err)
+							v.store.Delete(userID)
+							handler.HandleError(bot, update, boterror.ParseErrToText(err))
+							return
+						}
+					} else {
+						v.store.Delete(userID)
+
+						msg := tgbotapi.NewMessage(update.FromChat().ID, `Произошла ошибка из-за прошлых операций. Попробуйте еще раз.`)
+						if _, err := bot.Send(msg); err != nil {
+							v.log.Error("%v", err)
+							handler.HandleError(bot, update, boterror.ParseErrToText(err))
+							return
+						}
+					}
+
+				}
+			case <-subCtx.Done():
+				v.store.Delete(userID)
+				return
+			}
+
+		}()
 		return nil
 	}
 }
