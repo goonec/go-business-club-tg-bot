@@ -40,7 +40,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	transportCh := make(chan map[int64]map[string][]string, 1)
 	transportСhResident := make(chan map[int64]map[string][]string, 1)
 	transportСhSchedule := make(chan map[int64]map[string][]string, 1)
-	transportChFeedback := make(chan map[int64][]string, 1000)
+	transportChFeedback := make(chan map[int64][]interface{}, 1000)
 	transportPptx := make(chan map[int64]map[string][]string, 1)
 	transportPhoto := make(chan map[int64]map[string][]string, 10)
 

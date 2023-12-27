@@ -33,7 +33,7 @@ type Bot struct {
 	transportCh         chan map[int64]map[string][]string
 	transportChResident chan map[int64]map[string][]string
 	transportChSchedule chan map[int64]map[string][]string
-	transportChFeedback chan map[int64][]string
+	transportChFeedback chan map[int64][]interface{}
 	transportPptx       chan map[int64]map[string][]string
 	transportPhoto      chan map[int64]map[string][]string
 
@@ -85,7 +85,7 @@ func NewBot(api *tgbotapi.BotAPI,
 	transportCh chan map[int64]map[string][]string,
 	transportChResident chan map[int64]map[string][]string,
 	transportChSchedule chan map[int64]map[string][]string,
-	transportChFeedback chan map[int64][]string,
+	transportChFeedback chan map[int64][]interface{},
 	transportPptx chan map[int64]map[string][]string,
 	transportPhoto chan map[int64]map[string][]string,
 	channelID int64) *Bot {
@@ -210,15 +210,15 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 
 		// Обратная связь пользователей
 		if _, ok := b.readCommand(update.Message.Chat.ID, "feedback"); ok {
-			fb := []string{update.Message.Text}
-			b.transportChFeedback <- map[int64][]string{update.Message.Chat.ID: fb}
+			fb := []interface{}{update.Message.Text, *update, "услуги"}
+			b.transportChFeedback <- map[int64][]interface{}{update.Message.Chat.ID: fb}
 			b.delete(update.Message.Chat.ID)
 			return
 		}
 
 		if _, ok := b.readCommand(update.Message.Chat.ID, "request"); ok {
-			fb := []string{update.Message.Text}
-			b.transportChFeedback <- map[int64][]string{update.Message.Chat.ID: fb}
+			fb := []interface{}{update.Message.Text, *update, "заявка на вступление"}
+			b.transportChFeedback <- map[int64][]interface{}{update.Message.Chat.ID: fb}
 			b.delete(update.Message.Chat.ID)
 			return
 		}
