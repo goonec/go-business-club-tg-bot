@@ -71,7 +71,12 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 			"/get_feedback - получить обратные отзывы\n" +
 			"/delete_service - удаления услуги\n" +
 			"/delete_under_service - удаление раздела услуги\n" +
-			`/update_pptx - изменить вводный файл в разделе "О нас"`)
+			`/update_pptx - изменить вводный файл в разделе "О нас"` + "\n" +
+			"/delete_feedback - удалить обратную связь по id" + "\n" +
+			"<u>Шаблон по удалению обратной связи:</u>\n" +
+			"{\n" +
+			`"id":Введите id` +
+			"\n}\n")
 
 		textService := "/create_service\n" +
 			"{\n" +
@@ -90,6 +95,11 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 				`"cluster":"Введите название кластера"` +
 				"\n}\n"
 
+		textID := "/delete_feedback" +
+			"\n{\n" +
+			`"id":Введите id` +
+			"\n}\n"
+
 		msg := tgbotapi.NewMessage(update.FromChat().ID, text)
 		msg.ParseMode = tgbotapi.ModeHTML
 
@@ -106,6 +116,10 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 		}
 
 		if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID, textUnderService)); err != nil {
+			return err
+		}
+
+		if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID, textID)); err != nil {
 			return err
 		}
 

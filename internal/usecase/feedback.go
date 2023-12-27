@@ -21,8 +21,7 @@ func (f *feedbackUsecase) GetAllFeedback(ctx context.Context) ([]entity.Feedback
 }
 
 func (f *feedbackUsecase) DeleteFeedback(ctx context.Context, id int) error {
-	//TODO implement me
-	panic("implement me")
+	return f.feedbackRepo.Delete(ctx, id)
 }
 
 func (f *feedbackUsecase) CreateFeedback(ctx context.Context, feedback *entity.Feedback) (*entity.Feedback, error) {

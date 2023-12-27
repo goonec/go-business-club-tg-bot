@@ -86,6 +86,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("create_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateService()))
 	newBot.RegisterCommandView("create_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateUnderService()))
 	newBot.RegisterCommandView("get_feedback", middleware.AdminMiddleware(cfg.Chat.ChatID, feedbackView.ViewGetFeedback()))
+	newBot.RegisterCommandView("delete_feedback", middleware.AdminMiddleware(cfg.Chat.ChatID, feedbackView.ViewDeleteFeedback()))
 	newBot.RegisterCommandView("update_pptx", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePptx()))
 	newBot.RegisterCommandView("delete_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewDeleteService()))
 	newBot.RegisterCommandView("delete_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewDeleteUnderService()))

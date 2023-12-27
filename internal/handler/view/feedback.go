@@ -10,6 +10,7 @@ import (
 	"github.com/goonec/business-tg-bot/internal/handler/tgbot"
 	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/logger"
+	"github.com/goonec/business-tg-bot/pkg/parser"
 )
 
 type viewFeedback struct {
@@ -35,6 +36,34 @@ func (v *viewFeedback) ViewGetFeedback() tgbot.ViewFunc {
 
 		feedbackByte, _ := json.MarshalIndent(feedback, "", "")
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("%s", string(feedbackByte)))
+		if _, err := bot.Send(msg); err != nil {
+			v.log.Error("failed to send message: %v", err)
+			return err
+		}
+		return nil
+	}
+}
+
+func (v *viewFeedback) ViewDeleteFeedback() tgbot.ViewFunc {
+	type deleteFeedbackArgs struct {
+		ID int `json:"id"`
+	}
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		args, err := parser.ParseJSON[deleteFeedbackArgs](update.Message.CommandArguments())
+		if err != nil {
+			v.log.Error("ParseJSON: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		err = v.feedbackUsecase.DeleteFeedback(ctx, args.ID)
+		if err != nil {
+			v.log.Error("feedbackUsecase.DeleteFeedback: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Удалено успешно")
 		if _, err := bot.Send(msg); err != nil {
 			v.log.Error("failed to send message: %v", err)
 			return err
