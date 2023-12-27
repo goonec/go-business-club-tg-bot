@@ -69,6 +69,7 @@ create table if not exists service_describe(
     primary key (id)
 );
 
+
 create table if not exists feedback(
     id int generated always as identity,
     message text,
@@ -77,3 +78,8 @@ create table if not exists feedback(
     tg_username text,
     primary key (id)
 );
+
+create table if not exists pptx(
+  pptx_file_id varchar(150) unique
+);
+select pptx_file_id from pptx;

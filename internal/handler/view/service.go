@@ -10,20 +10,26 @@ import (
 	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/parser"
+	"github.com/goonec/business-tg-bot/pkg/postgres"
+	"time"
 )
 
 type viewService struct {
 	serviceUsecase usecase.Service
 	store          *localstore.Store
 
-	log *logger.Logger
+	transportPptx chan map[int64]map[string][]string
+	log           *logger.Logger
+	pg            *postgres.Postgres
 }
 
-func NewViewService(serviceUsecase usecase.Service, store *localstore.Store, log *logger.Logger) *viewService {
+func NewViewService(serviceUsecase usecase.Service, store *localstore.Store, log *logger.Logger, transportPptx chan map[int64]map[string][]string, pg *postgres.Postgres) *viewService {
 	return &viewService{
 		serviceUsecase: serviceUsecase,
 		store:          store,
 		log:            log,
+		transportPptx:  transportPptx,
+		pg:             pg,
 	}
 }
 
@@ -100,6 +106,48 @@ func (v *viewService) ViewCreateUnderService() tgbot.ViewFunc {
 				return err
 			}
 		}
+		return nil
+	}
+}
+
+func (v *viewService) ViewCreatePhotoServiceDescribe() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+
+		return nil
+	}
+}
+
+func (v *viewService) ViewCreatePptx() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "Отправьте презентацию")
+
+		if _, err := bot.Send(msg); err != nil {
+			return err
+		}
+
+		go func() {
+			subCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			defer cancel()
+
+			select {
+			case d, ok := <-v.transportPptx:
+				v.log.Info("", d, ok)
+				if ok {
+					data := d[update.Message.From.ID]["/create_pptx"]
+
+					_, err := v.pg.Pool.Exec(context.Background(), "insert into pptx (pptx_file_id) values ($1)", data[0])
+					if err != nil {
+						v.log.Error("%v", err)
+						return
+					}
+				}
+				return
+			case <-subCtx.Done():
+				return
+			}
+
+			return
+		}()
 		return nil
 	}
 }

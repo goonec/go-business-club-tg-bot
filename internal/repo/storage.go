@@ -44,6 +44,7 @@ type Service interface {
 }
 
 type ServiceDescribe interface {
+	CreatePhoto(ctx context.Context, id int, fileID string) error
 	Create(ctx context.Context, service *entity.ServiceDescribe) error
 	Delete(ctx context.Context, id int) error
 	GetAllByServiceID(ctx context.Context, serviceID int) ([]entity.ServiceDescribe, error)

@@ -83,6 +83,10 @@ func (s *serviceUsecase) Get(ctx context.Context, serviceDescribeID int) (*entit
 	return s.serviceDescribeRepo.Get(ctx, serviceDescribeID)
 }
 
+func (s *serviceUsecase) CreatePhoto(ctx context.Context, id int, fileID string) error {
+	return s.serviceDescribeRepo.CreatePhoto(ctx, id, fileID)
+}
+
 func (s *serviceUsecase) GetAllServiceDescribe(ctx context.Context, command string) (*tgbotapi.InlineKeyboardMarkup, error) {
 	serviceDescribe, err := s.serviceDescribeRepo.GetAll(ctx)
 	if err != nil {

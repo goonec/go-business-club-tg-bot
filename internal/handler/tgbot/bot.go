@@ -34,6 +34,7 @@ type Bot struct {
 	transportChResident chan map[int64]map[string][]string
 	transportChSchedule chan map[int64]map[string][]string
 	transportChFeedback chan map[int64][]string
+	transportPptx       chan map[int64]map[string][]string
 
 	mu sync.RWMutex
 }
@@ -84,6 +85,7 @@ func NewBot(api *tgbotapi.BotAPI,
 	transportChResident chan map[int64]map[string][]string,
 	transportChSchedule chan map[int64]map[string][]string,
 	transportChFeedback chan map[int64][]string,
+	transportPptx chan map[int64]map[string][]string,
 	channelID int64) *Bot {
 	return &Bot{
 		api:                 api,
@@ -95,6 +97,7 @@ func NewBot(api *tgbotapi.BotAPI,
 		transportChResident: transportChResident,
 		transportChSchedule: transportChSchedule,
 		transportChFeedback: transportChFeedback,
+		transportPptx:       transportPptx,
 		channelID:           channelID,
 	}
 }
@@ -267,6 +270,17 @@ func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 	if ok {
 		for key, value := range s {
 			switch key {
+			case "/create_pptx":
+				pptx := update.Message.Document.FileID
+
+				b.log.Info("", pptx)
+				b.set(pptx, key, userID)
+
+				d, _ := b.read(userID)
+				b.transportPptx <- map[int64]map[string][]string{userID: d}
+
+				b.delete(userID)
+				return false
 			case "/create_schedule":
 				photo := update.Message.Photo
 				if len(photo) > 0 {

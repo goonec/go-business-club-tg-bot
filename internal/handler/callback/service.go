@@ -16,13 +16,15 @@ import (
 
 type callbackService struct {
 	serviceUsecase usecase.Service
+	pptxUsecase    usecase.Pptx
 	store          *localstore.Store
 	log            *logger.Logger
 }
 
-func NewCallbackService(serviceUsecase usecase.Service, store *localstore.Store, log *logger.Logger) *callbackService {
+func NewCallbackService(serviceUsecase usecase.Service, pptxUsecase usecase.Pptx, store *localstore.Store, log *logger.Logger) *callbackService {
 	return &callbackService{
 		serviceUsecase: serviceUsecase,
+		pptxUsecase:    pptxUsecase,
 		store:          store,
 		log:            log,
 	}
@@ -101,7 +103,17 @@ func (c *callbackService) CallbackShowServiceInfo() tgbot.ViewFunc {
 			builder.WriteString(fmt.Sprintf("Описание: %s", serviceDescribe.Describe))
 		}
 
-		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, builder.String())
+		poster := tgbotapi.FileID(serviceDescribe.PhotoFileID)
+		photoMedia := tgbotapi.NewInputMediaPhoto(poster)
+
+		msg := tgbotapi.EditMessageMediaConfig{
+			BaseEdit: tgbotapi.BaseEdit{
+				ChatID:    update.CallbackQuery.Message.Chat.ID,
+				MessageID: update.CallbackQuery.Message.MessageID,
+			}, Media: photoMedia,
+		}
+
+		//msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, builder.String())
 
 		serviceDescribeMarkup := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(handler.FeedbackButton),
 			tgbotapi.NewInlineKeyboardRow(handler.MainMenuButton))
@@ -162,21 +174,33 @@ func (c *callbackService) CallbackCreateServiceDescribe() tgbot.ViewFunc {
 	}
 }
 
-//func (c *callbackService) CallbackShowPPTX() tgbot.ViewFunc {
-//	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-//
-//		fileID := tgbotapi.FileID(dataFile)
-//		msg := tgbotapi.DocumentConfig{
-//			ParseMode: tgbotapi.ModeHTML,
-//			BaseFile: tgbotapi.BaseFile{
-//				BaseChat: tgbotapi.BaseChat{
-//					ChatID:      update.CallbackQuery.Message.Chat.ID,
-//					ReplyMarkup: &handler.StartMenu,
-//				},
-//				File: fileID,
-//			},
-//		}
-//
-//		msg.Caption = fmt.Sprintf()
-//	}
-//}
+func (c *callbackService) CallbackShowPPTX() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		file, err := c.pptxUsecase.GetPresentation(ctx)
+		if err != nil {
+			c.log.Error("pptxUsecase.GetPresentation: %v", err)
+			return err
+		}
+
+		fileID := tgbotapi.FileID(file)
+		msg := tgbotapi.DocumentConfig{
+			ParseMode: tgbotapi.ModeHTML,
+			BaseFile: tgbotapi.BaseFile{
+				BaseChat: tgbotapi.BaseChat{
+					ChatID:      update.CallbackQuery.Message.Chat.ID,
+					ReplyMarkup: &handler.MainMenuButton,
+				},
+				File: fileID,
+			},
+		}
+
+		msg.Caption = fmt.Sprintf("test")
+
+		if _, err := bot.Send(msg); err != nil {
+			c.log.Error("failed to send message: %v", err)
+			return err
+		}
+
+		return nil
+	}
+}

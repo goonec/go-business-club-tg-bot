@@ -16,8 +16,15 @@ func NewServiceDescribeRepo(pg *postgres.Postgres) ServiceDescribe {
 	}
 }
 
+func (s *serviceDescribeRepo) CreatePhoto(ctx context.Context, id int, fileID string) error {
+	query := `update service_describe set  photo_file_id = $1 where id = $2`
+
+	_, err := s.Pool.Exec(ctx, query, fileID, id)
+	return err
+}
+
 func (s *serviceDescribeRepo) Create(ctx context.Context, service *entity.ServiceDescribe) error {
-	query := `insert into service_describe (id_service,name,describe) values ($1,$2,$3)`
+	query := `insert into service_describe (id_service,name,describe) values ($1,$2,$3,$4)`
 
 	_, err := s.Pool.Exec(ctx, query, service.ServiceID, service.Describe, service.Name)
 	return err

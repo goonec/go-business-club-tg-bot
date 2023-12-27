@@ -4,6 +4,13 @@ import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 
 func (b *Bot) IsCommandText(text string, userID int64) *bool {
 	switch text {
+	//case "/create_service_photo":
+	//	_, ok := b.read(userID)
+	//	if !ok {
+	//		b.stateStore[userID] = make(map[string][]string)
+	//		b.stateStore[userID]["/create_service_photo"] = []string{}
+	//	}
+	//	return &[]bool{true}[0]
 	case "/cancel":
 		b.cancelMessageWithState(userID)
 		return &[]bool{false}[0]
@@ -36,6 +43,13 @@ func (b *Bot) IsCommandText(text string, userID int64) *bool {
 		if !ok {
 			b.stateStore[userID] = make(map[string][]string)
 			b.stateStore[userID]["/notify"] = []string{}
+		}
+		return &[]bool{true}[0]
+	case "/create_pptx":
+		_, ok := b.read(userID)
+		if !ok {
+			b.stateStore[userID] = make(map[string][]string)
+			b.stateStore[userID]["/create_pptx"] = []string{}
 		}
 		return &[]bool{true}[0]
 	//case "/chat_gpt":
