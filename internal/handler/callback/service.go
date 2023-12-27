@@ -109,8 +109,7 @@ func (c *callbackService) CallbackShowServiceInfo() tgbot.ViewFunc {
 		msg := tgbotapi.NewPhoto(update.CallbackQuery.Message.Chat.ID, photoMedia.Media)
 		msg.Caption = builder.String()
 
-		serviceDescribeMarkup := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(handler.FeedbackButton),
-			tgbotapi.NewInlineKeyboardRow(handler.MainMenuButton))
+		serviceDescribeMarkup := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(handler.FeedbackButton))
 
 		msg.ReplyMarkup = &serviceDescribeMarkup
 

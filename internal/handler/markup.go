@@ -13,7 +13,7 @@ var (
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Оставить заявку на вступление ✅", "request")),
+			tgbotapi.NewInlineKeyboardButtonData("Оставить заявку на вступление", "request")),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("О нас", "pptx")),
 		tgbotapi.NewInlineKeyboardRow(
