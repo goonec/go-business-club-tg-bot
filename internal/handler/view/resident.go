@@ -11,6 +11,7 @@ import (
 	"github.com/goonec/business-tg-bot/internal/handler/tgbot"
 	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/logger"
+	"github.com/goonec/business-tg-bot/pkg/tg"
 	"strings"
 	"sync"
 	"time"
@@ -395,7 +396,7 @@ func (v *viewResident) ViewDeleteResident() tgbot.ViewFunc {
 func (v *viewResident) ViewStartButton() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 		msg := tgbotapi.NewMessage(update.FromChat().ID, "<b>Список команд доступных для использования бота</b> ⏩")
-		msg.ReplyMarkup = &handler.StartMenu
+		msg.ReplyMarkup = &tg.StartMenu
 		msg.ParseMode = tgbotapi.ModeHTML
 
 		if _, err := bot.Send(msg); err != nil {

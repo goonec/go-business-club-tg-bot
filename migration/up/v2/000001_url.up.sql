@@ -8,7 +8,7 @@ DO $$
 
 create table if not exists "user"(
     id bigint unique,
-    tg_username text unique,
+    tg_username text ,
     created_at timestamp,
     role role default 'user',
     primary key (id)

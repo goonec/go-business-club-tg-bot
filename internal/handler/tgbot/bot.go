@@ -208,7 +208,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			return
 		}
 
-		// Обратная связь пользователей
+		// Обратная связь пользователей в кнопке услуги
 		if _, ok := b.readCommand(update.Message.Chat.ID, "feedback"); ok {
 			fb := []interface{}{update.Message.Text, *update, "услуги"}
 			b.transportChFeedback <- map[int64][]interface{}{update.Message.Chat.ID: fb}
@@ -216,6 +216,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 			return
 		}
 
+		// Заявка на вступление в клуб
 		if _, ok := b.readCommand(update.Message.Chat.ID, "request"); ok {
 			fb := []interface{}{update.Message.Text, *update, "заявка на вступление"}
 			b.transportChFeedback <- map[int64][]interface{}{update.Message.Chat.ID: fb}

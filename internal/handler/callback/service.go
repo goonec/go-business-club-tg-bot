@@ -11,6 +11,7 @@ import (
 	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
+	"github.com/goonec/business-tg-bot/pkg/tg"
 	"strings"
 )
 
@@ -109,7 +110,7 @@ func (c *callbackService) CallbackShowServiceInfo() tgbot.ViewFunc {
 		msg := tgbotapi.NewPhoto(update.CallbackQuery.Message.Chat.ID, photoMedia.Media)
 		msg.Caption = builder.String()
 
-		serviceDescribeMarkup := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(handler.FeedbackButton))
+		serviceDescribeMarkup := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tg.FeedbackButton))
 
 		msg.ReplyMarkup = &serviceDescribeMarkup
 
@@ -182,7 +183,7 @@ func (c *callbackService) CallbackShowPPTX() tgbot.ViewFunc {
 			BaseFile: tgbotapi.BaseFile{
 				BaseChat: tgbotapi.BaseChat{
 					ChatID:      update.CallbackQuery.Message.Chat.ID,
-					ReplyMarkup: &handler.MainMenuButton,
+					ReplyMarkup: &tg.MainMenuButton,
 				},
 				File: fileID,
 			},

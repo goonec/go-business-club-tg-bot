@@ -11,6 +11,7 @@ import (
 	"github.com/goonec/business-tg-bot/internal/usecase"
 	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
+	"github.com/goonec/business-tg-bot/pkg/tg"
 )
 
 type callbackResident struct {
@@ -120,7 +121,7 @@ func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "<b>Список команд доступных для использования бота</b> ⏩")
 
 		msg.ParseMode = tgbotapi.ModeHTML
-		msg.ReplyMarkup = &handler.StartMenu
+		msg.ReplyMarkup = &tg.StartMenu
 		if _, err := bot.Send(msg); err != nil {
 			c.log.Error("failed to send message: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
