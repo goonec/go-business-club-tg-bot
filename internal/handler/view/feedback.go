@@ -24,7 +24,7 @@ func NewViewFeedback(feedbackUsecase usecase.Feedback, log *logger.Logger) *view
 	}
 }
 
-func (v *viewFeedback) CallbackGetFeedback() tgbot.ViewFunc {
+func (v *viewFeedback) ViewGetFeedback() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 		feedback, err := v.feedbackUsecase.GetAllFeedback(ctx)
 		if err != nil {

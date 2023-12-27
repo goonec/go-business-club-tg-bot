@@ -82,4 +82,3 @@ create table if not exists feedback(
 create table if not exists pptx(
   pptx_file_id varchar(150) unique
 );
-select pptx_file_id from pptx;

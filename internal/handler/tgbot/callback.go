@@ -145,6 +145,18 @@ func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
 			return errors.New("not found in map"), nil
 		}
 		return nil, callbackView
+	case strings.HasPrefix(callbackData, "servicedelete_"):
+		callbackView, ok := b.callbackView["servicedelete"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
+	case strings.HasPrefix(callbackData, "servicedescdelete_"):
+		callbackView, ok := b.callbackView["servicedescdelete"]
+		if !ok {
+			return errors.New("not found in map"), nil
+		}
+		return nil, callbackView
 	}
 
 	return nil, nil

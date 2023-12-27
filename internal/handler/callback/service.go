@@ -98,7 +98,7 @@ func (c *callbackService) CallbackShowServiceInfo() tgbot.ViewFunc {
 
 		var builder strings.Builder
 		builder.WriteString(fmt.Sprintf("Название услуги: %s\n\n", serviceDescribe.Service.Name))
-		builder.WriteString(fmt.Sprintf("Название раздела: %s\n", serviceDescribe.Name))
+		//builder.WriteString(fmt.Sprintf("Название раздела: %s\n", serviceDescribe.Name))
 		if serviceDescribe.Describe != "" {
 			builder.WriteString(fmt.Sprintf("Описание: %s", serviceDescribe.Describe))
 		}
@@ -189,9 +189,65 @@ func (c *callbackService) CallbackShowPPTX() tgbot.ViewFunc {
 			},
 		}
 
-		msg.Caption = fmt.Sprintf("test")
+		msg.Caption = fmt.Sprintf(
+			"Ассоциация АВАНТИ — общественная площадка по поддержке и развитию бизнеса в России:\n" +
+				"◦ С 2014 года создаем условия для развития бизнеса\n" +
+				"◦ Объединили 100.000+ предпринимателей\n" +
+				"◦ 100+ мероприятий провели на собственные средства\n" +
+				"◦ 2.000+ бизнес-запросов получили и помогли их решить\n" +
+				"Подробнее в презентации Ассоциации.")
 
 		if _, err := bot.Send(msg); err != nil {
+			c.log.Error("failed to send message: %v", err)
+			return err
+		}
+
+		return nil
+	}
+}
+
+func (c *callbackService) CallbackDeleteService() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		id := entity.FindID(update.CallbackData())
+		if id == 0 {
+			c.log.Error("entity.FindID: %v")
+			handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectCallbackData))
+			return nil
+		}
+
+		err := c.serviceUsecase.DeleteService(ctx, id)
+		if err != nil {
+			c.log.Error("serviceUsecase.CreateServiceDescribe: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "Удаление выполнено успешно")); err != nil {
+			c.log.Error("failed to send message: %v", err)
+			return err
+		}
+
+		return nil
+	}
+}
+
+func (c *callbackService) CallbackDeleteServiceDescribe() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		id := entity.FindID(update.CallbackData())
+		if id == 0 {
+			c.log.Error("entity.FindID: %v")
+			handler.HandleError(bot, update, boterror.ParseErrToText(boterror.ErrIncorrectCallbackData))
+			return nil
+		}
+
+		err := c.serviceUsecase.DeleteServiceDescribe(ctx, id)
+		if err != nil {
+			c.log.Error("serviceUsecase.DeleteServiceDescribe: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		if _, err := bot.Send(tgbotapi.NewMessage(update.FromChat().ID, "Удаление выполнено успешно")); err != nil {
 			c.log.Error("failed to send message: %v", err)
 			return err
 		}

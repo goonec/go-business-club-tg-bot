@@ -85,9 +85,14 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("delete_cluster", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewDeleteCluster()))
 	newBot.RegisterCommandView("create_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateService()))
 	newBot.RegisterCommandView("create_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreateUnderService()))
-	newBot.RegisterCommandView("get_feedback", middleware.AdminMiddleware(cfg.Chat.ChatID, feedbackView.CallbackGetFeedback()))
+	newBot.RegisterCommandView("get_feedback", middleware.AdminMiddleware(cfg.Chat.ChatID, feedbackView.ViewGetFeedback()))
 	//newBot.RegisterCommandView("create_service_photo", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePhotoServiceDescribe()))
-	newBot.RegisterCommandView("create_pptx", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePptx()))
+	newBot.RegisterCommandView("create_pptx", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePptx())) // only developer
+	newBot.RegisterCommandView("delete_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewDeleteService()))
+	newBot.RegisterCommandView("delete_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewDeleteUnderService()))
+
+	newBot.RegisterCommandCallback("servicedelete", serviceCallback.CallbackDeleteService())
+	newBot.RegisterCommandCallback("servicedescdelete", serviceCallback.CallbackDeleteServiceDescribe())
 
 	newBot.RegisterCommandView("start", residentView.ViewStartButton())
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())

@@ -68,7 +68,9 @@ func (v *viewResident) ViewAdminCommand() tgbot.ViewFunc {
 			`"under_service_name": "Название раздела",` + "\n" +
 			`"describe": "Если имеется, то ввести описание раздела"` +
 			"\n}\n" +
-			"/get_feedback - получить обратные отзывы")
+			"/get_feedback - получить обратные отзывы\n" +
+			"/delete_service - удаления услуги\n" +
+			"/delete_under_service - удаление раздела услуги")
 
 		textService := "/create_service\n" +
 			"{\n" +

@@ -191,3 +191,45 @@ func (v *viewService) ViewCreatePptx() tgbot.ViewFunc {
 		return nil
 	}
 }
+
+func (v *viewService) ViewDeleteService() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		sMarkup, err := v.serviceUsecase.GetAllService(ctx, "delete")
+		if err != nil {
+			v.log.Error("serviceUsecase.GetAllService: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		msg := tgbotapi.NewMessage(update.FromChat().ID, `Выбирите сервис, который нужно удалить.`)
+		msg.ReplyMarkup = sMarkup
+
+		if _, err := bot.Send(msg); err != nil {
+			v.log.Error("%v", err)
+			return err
+		}
+
+		return nil
+	}
+}
+
+func (v *viewService) ViewDeleteUnderService() tgbot.ViewFunc {
+	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
+		sdMarkup, err := v.serviceUsecase.GetAllServiceDescribe(ctx, "descdelete")
+		if err != nil {
+			v.log.Error("serviceUsecase.GetAllService: %v", err)
+			handler.HandleError(bot, update, boterror.ParseErrToText(err))
+			return nil
+		}
+
+		msg := tgbotapi.NewMessage(update.FromChat().ID, `Выбирите раздел сервиса, который нужно удалить.`)
+		msg.ReplyMarkup = sdMarkup
+
+		if _, err := bot.Send(msg); err != nil {
+			v.log.Error("%v", err)
+			return err
+		}
+
+		return nil
+	}
+}
