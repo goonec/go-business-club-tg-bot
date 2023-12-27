@@ -98,7 +98,7 @@ func (c *callbackService) CallbackShowServiceInfo() tgbot.ViewFunc {
 
 		var builder strings.Builder
 		builder.WriteString(fmt.Sprintf("Название услуги: %s\n\n", serviceDescribe.Service.Name))
-		//builder.WriteString(fmt.Sprintf("Название раздела: %s\n", serviceDescribe.Name))
+		builder.WriteString(fmt.Sprintf("Название раздела: %s\n", serviceDescribe.Name))
 		if serviceDescribe.Describe != "" {
 			builder.WriteString(fmt.Sprintf("Описание: %s", serviceDescribe.Describe))
 		}
