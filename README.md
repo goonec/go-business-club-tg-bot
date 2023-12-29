@@ -1,22 +1,32 @@
 
+# Сущности
+ - `cluster`;
+ - `feedback`;
+ - `resident`;
+ - `schedule`;
+ - `service`;
+ - `user`;
+
+# Callback & View
+
 # User
 
 ## Callback:
- - feedback - обратная связь `услуги`
- - main_menu - возвращение в главное меню
  - service_{id} - список услуг
  - servicedescribe_{id} - список под-услуг
+ - cluster_{id} - отпрвляет резидента по `id` кластера
+ - fio_{id} - отправляет резидента по его `id`
+ - feedback - обратная связь `услуги`
+ - main_menu - возвращение в главное меню
  - servicecreate - список под-услуг для получения их id и составления описания
  - servicelist - список доступных сервисов
- - resident
+ - resident - список всех резидентов
  - chat_gpt - запуск Chat GPT
  - schedule - отправляет последнее загруженное расписание из БД
  - request - создает форму обратной связи для оставления `заявка на вступление`
  - instruction - отправляет текст с описанием кнопок
  - pptx - отправляет текст с документом из БД
- - cluster - отпрвляет резидента по `id` кластера
  - allcluster - отправляет все кластера
- - fio - отправляет резидента по его `id`
  - exit - завершает работу состояний `feedback` и `request`
 
 ## View 
@@ -28,9 +38,9 @@
 
 ## Callback
 
- - servicedelete
- - servicedescdelete
- - getcluster
+ - servicedelete - удаление услуги по кнопке
+ - servicedescdelete - удаление вида услуги по кнопке
+ - getcluster 
  - deletecluster
  - fiogetresident
 
@@ -73,4 +83,4 @@
 }
 ```
 - delete_under_service - удаление раздела услуги
-- add_cluster_to_resident - 
+- add_cluster_to_resident - назначет кластер резиденту
