@@ -11,6 +11,9 @@ func (b *Bot) IsCommandText(text string, userID int64) *bool {
 	//		b.stateStore[userID]["/create_service_photo"] = []string{}
 	//	}
 	//	return &[]bool{true}[0]
+	case "/exit":
+		b.cancelFeedbackOrRequest(userID)
+		return &[]bool{false}[0]
 	case "/cancel":
 		b.cancelMessageWithState(userID)
 		return &[]bool{false}[0]
@@ -91,6 +94,15 @@ func (b *Bot) cancelChatGptDialog(userID int64) {
 	b.delete(userID)
 
 	msg := tgbotapi.NewMessage(userID, "Chat GPT остановлен.")
+	if _, err := b.api.Send(msg); err != nil {
+		b.log.Error("failed to send message: %v", err)
+	}
+}
+
+func (b *Bot) cancelFeedbackOrRequest(userID int64) {
+	b.delete(userID)
+
+	msg := tgbotapi.NewMessage(userID, "Обратная связь отменена.")
 	if _, err := b.api.Send(msg); err != nil {
 		b.log.Error("failed to send message: %v", err)
 	}

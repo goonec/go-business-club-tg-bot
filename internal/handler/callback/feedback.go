@@ -29,7 +29,8 @@ func NewCallbackFeedback(feedbackUsecase usecase.Feedback, transportChFeedback c
 
 func (c *callbackFeedback) CallbackCreateFeedback(chatID int64) tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "Пожалуйста отправьте сообщение для обратной связи. В сообщении укажите в виде данных номер и телеграмм, по которым можно будет связаться.")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "Пожалуйста отправьте сообщение для обратной связи. В сообщении укажите в виде данных номер и телеграмм, по которым можно будет связаться.\n\n"+
+			"В случае, если вы передумали отправлять сообщение, воспользуйтесь командой - /exit.")
 		if _, err := bot.Send(msg); err != nil {
 			c.log.Error("failed to send message: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
@@ -44,18 +45,7 @@ func (c *callbackFeedback) CallbackCreateFeedback(chatID int64) tgbot.ViewFunc {
 			case d, exist := <-c.transportChFeedback:
 				c.log.Info("feedback", d, exist)
 				if exist {
-					//data := d[update.CallbackQuery.Message.Chat.ID]
 					for key, value := range d {
-
-						//if data == nil || len(data) == 0 {
-						//	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, boterror.ParseErrToText(boterror.ErrInternalError))
-						//	c.log.Error("ViewCreateResidentPhoto: data == nil || len(data) == 0: %v", boterror.ErrInternalError)
-						//	if _, err := bot.Send(msg); err != nil {
-						//		c.log.Error("%v")
-						//	}
-						//	return
-						//}
-
 						u := value[1].(tgbotapi.Update)
 						fb := &entity.Feedback{
 							Message:    value[0].(string),
@@ -89,7 +79,8 @@ func (c *callbackFeedback) CallbackCreateFeedback(chatID int64) tgbot.ViewFunc {
 
 func (c *callbackFeedback) CallbackMembershipRequest() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "Пожалуйста, пришлите нам ваше ФИО, номер телефона и вид деятельности. Мы свяжемся с вами в ближайшее время!")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "Пожалуйста, пришлите нам ваше ФИО, номер телефона и вид деятельности. Мы свяжемся с вами в ближайшее время!\n\n"+
+			"В случае, если вы передумали отправлять сообщение, воспользуйтесь командой - /exit.")
 		if _, err := bot.Send(msg); err != nil {
 			c.log.Error("failed to send message: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
@@ -103,18 +94,8 @@ func (c *callbackFeedback) CallbackMembershipRequest() tgbot.ViewFunc {
 			select {
 			case d, exist := <-c.transportChFeedback:
 				c.log.Info("membership request", d, exist)
-				//data := d[update.CallbackQuery.Message.Chat.ID]
 				if exist {
 					for key, value := range d {
-						//if data == nil || len(data) == 0 {
-						//	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, boterror.ParseErrToText(boterror.ErrInternalError))
-						//	c.log.Error("ViewCreateResidentPhoto: data == nil || len(data) == 0: %v", boterror.ErrInternalError)
-						//	if _, err := bot.Send(msg); err != nil {
-						//		c.log.Error("%v")
-						//	}
-						//	return
-						//}
-
 						u := value[1].(tgbotapi.Update)
 						fb := &entity.Feedback{
 							Message:    value[0].(string),

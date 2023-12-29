@@ -211,15 +211,11 @@ func (v *viewResident) ViewCreateResident() tgbot.ViewFunc {
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Резидент добавлен успешно.")
 
 					if _, err := bot.Send(msg); err != nil {
-						//return err
 						v.log.Error("%v")
+						return
 					}
 				}
 			case <-subCtx.Done():
-				//msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Истек срок создания резидента.")
-				//if _, err := bot.Send(msg); err != nil {
-				//	v.log.Error("%v", err)
-				//}
 				return
 			}
 		}()
@@ -270,15 +266,10 @@ func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 					}
 
 					resident := &entity.Resident{
-						//BusinessCluster: entity.BusinessCluster{
-						//	Name: fioTg[4],
-						//},
 						FIO: entity.FIO{
 							Firstname: fioTg[0],
 							Lastname:  fioTg[1],
-							//Patronymic: fioTg[2],
 						},
-						//UsernameTG:  fioTg[3],
 						PhotoFileID: data[1],
 					}
 
@@ -291,15 +282,11 @@ func (v *viewResident) ViewCreateResidentPhoto() tgbot.ViewFunc {
 					msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Резидент добавлен успешно.")
 
 					if _, err := bot.Send(msg); err != nil {
-						//return err
 						v.log.Error("%v")
+						return
 					}
 				}
 			case <-subCtx.Done():
-				//msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Истек срок создания резидента.")
-				//if _, err := bot.Send(msg); err != nil {
-				//	v.log.Error("%v", err)
-				//}
 				return
 			}
 		}()
@@ -346,12 +333,6 @@ func (v *viewResident) ViewCreateNotify() tgbot.ViewFunc {
 						residentPhoto := tgbotapi.NewInputMediaPhoto(tgbotapi.FileID(data[1]))
 						msg := tgbotapi.NewPhoto(id, residentPhoto.Media)
 						msg.Caption = data[0]
-
-						//msgText := tgbotapi.NewMessage(id, data[0])
-
-						//if _, err := bot.Send(msgText); err != nil {
-						//	v.log.Error("%v", err)
-						//}
 
 						if _, err := bot.Send(msg); err != nil {
 							once.Do(func() {

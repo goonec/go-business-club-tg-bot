@@ -90,6 +90,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("update_pptx", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewCreatePptx()))
 	newBot.RegisterCommandView("delete_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewDeleteService()))
 	newBot.RegisterCommandView("delete_under_service", middleware.AdminMiddleware(cfg.Chat.ChatID, serviceView.ViewDeleteUnderService()))
+	newBot.RegisterCommandView("add_cluster_to_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewShowAllBusinessCluster()))
 
 	newBot.RegisterCommandCallback("servicedelete", serviceCallback.CallbackDeleteService())
 	newBot.RegisterCommandCallback("servicedescdelete", serviceCallback.CallbackDeleteServiceDescribe())
@@ -97,7 +98,6 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandView("start", residentView.ViewStartButton())
 	newBot.RegisterCommandView("resident_list", residentView.ViewShowAllResident())
 
-	newBot.RegisterCommandView("add_cluster_to_resident", middleware.AdminMiddleware(cfg.Chat.ChatID, clusterView.ViewShowAllBusinessCluster()))
 	newBot.RegisterCommandCallback("getcluster", businessClusterCallback.CallbackGetIDCluster())
 	newBot.RegisterCommandCallback("deletecluster", businessClusterCallback.CallbackDeleteCluster())
 	newBot.RegisterCommandCallback("fiogetresident", businessClusterCallback.CallbackCreateClusterResident())
@@ -124,8 +124,6 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 	newBot.RegisterCommandCallback("fio", residentCallback.CallbackGetResident())
 
 	newBot.RegisterCommandCallback("servicecreate", serviceCallback.CallbackCreateServiceDescribe())
-
-	//newBot.RegisterCommandCallback("pptx")
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
