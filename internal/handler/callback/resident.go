@@ -117,8 +117,7 @@ func (c *callbackResident) CallbackShowAllResident() tgbot.ViewFunc {
 
 func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-
-		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "<b>Список команд доступных для использования бота</b> ⏩")
+		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "<b>Выберите нужную команду</b> ⏩")
 
 		msg.ParseMode = tgbotapi.ModeHTML
 		msg.ReplyMarkup = &tg.StartMenu

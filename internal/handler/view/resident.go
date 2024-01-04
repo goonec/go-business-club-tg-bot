@@ -376,7 +376,7 @@ func (v *viewResident) ViewDeleteResident() tgbot.ViewFunc {
 
 func (v *viewResident) ViewStartButton() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "<b>Список команд доступных для использования бота</b> ⏩")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "<b>Выберите нужную команду</b> ⏩")
 		msg.ReplyMarkup = &tg.StartMenu
 		msg.ParseMode = tgbotapi.ModeHTML
 

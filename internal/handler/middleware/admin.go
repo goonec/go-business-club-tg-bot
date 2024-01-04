@@ -47,6 +47,6 @@ var adminConfigMenu = tgbotapi.NewSetMyCommands(
 	},
 	tgbotapi.BotCommand{
 		Command:     "/stop_chat_gpt",
-		Description: "Завершение общения с чатом",
+		Description: "Завершить общения с Chat GPT",
 	},
 )
