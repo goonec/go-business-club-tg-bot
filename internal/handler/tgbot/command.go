@@ -121,8 +121,7 @@ func (b *Bot) userMessageWithState(update *tgbotapi.Update) bool {
 	if _, ok := b.readCommand(update.Message.Chat.ID, "feedback"); ok {
 		fb := []interface{}{update.Message.Text, *update, "услуги"}
 		b.transportChFeedback <- map[int64][]interface{}{update.Message.Chat.ID: fb}
-		b.delete(update.Message.Chat.ID)
-		b.cancelChatGptDialog(update.Message.Chat.ID)
+		b.deleteValue(update.Message.Chat.ID, "feedback")
 		return false
 	}
 
@@ -130,15 +129,14 @@ func (b *Bot) userMessageWithState(update *tgbotapi.Update) bool {
 	if _, ok := b.readCommand(update.Message.Chat.ID, "request"); ok {
 		fb := []interface{}{update.Message.Text, *update, "заявка на вступление"}
 		b.transportChFeedback <- map[int64][]interface{}{update.Message.Chat.ID: fb}
-		b.delete(update.Message.Chat.ID)
-		b.cancelChatGptDialog(update.Message.Chat.ID)
+		b.deleteValue(update.Message.Chat.ID, "request")
 		return false
 	}
 
 	return true
 }
 
-func (b *Bot) adminMessageWithState(update *tgbotapi.Update) bool {
+func (b *Bot) messageWithState(update *tgbotapi.Update) bool {
 	userID := update.Message.Chat.ID
 	text := update.Message.Text
 
@@ -343,7 +341,7 @@ func (b *Bot) cancelMessageWithState(userID int64) {
 }
 
 func (b *Bot) cancelChatGptDialog(userID int64) {
-	b.delete(userID)
+	b.deleteValue(userID, "chat_gpt")
 
 	msg := tgbotapi.NewMessage(userID, "Chat GPT остановлен.")
 	if _, err := b.api.Send(msg); err != nil {
@@ -352,7 +350,8 @@ func (b *Bot) cancelChatGptDialog(userID int64) {
 }
 
 func (b *Bot) cancelFeedbackOrRequest(userID int64) {
-	b.delete(userID)
+	b.deleteValue(userID, "request")
+	b.deleteValue(userID, "feedback")
 
 	msg := tgbotapi.NewMessage(userID, "Обратная связь отменена.")
 	if _, err := b.api.Send(msg); err != nil {

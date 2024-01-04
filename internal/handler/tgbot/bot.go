@@ -83,6 +83,18 @@ func (b *Bot) delete(userID int64) {
 	delete(b.stateStore, userID)
 }
 
+func (b *Bot) deleteValue(userID int64, value string) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	val, ok := b.stateStore[userID]
+	if !ok {
+		return
+	}
+
+	delete(val, value)
+}
+
 func NewBot(api *tgbotapi.BotAPI,
 	store *localstore.Store,
 	log *logger.Logger,
@@ -140,6 +152,9 @@ func (b *Bot) Run(ctx context.Context) error {
 		select {
 		case update := <-updates:
 			updateCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+
+			b.log.Info("", b.stateStore)
+
 			b.handlerUpdate(updateCtx, &update)
 
 			cancel()
@@ -185,7 +200,7 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 		}
 
 		// Проверка на состояния админских команд у пользователя
-		nextStepAdmin := b.adminMessageWithState(update)
+		nextStepAdmin := b.messageWithState(update)
 		if !nextStepAdmin {
 			return
 		}

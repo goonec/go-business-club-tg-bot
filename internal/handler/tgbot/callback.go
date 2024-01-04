@@ -35,33 +35,32 @@ func (b *Bot) callbackHasString(update *tgbotapi.Update) (error, ViewFunc) {
 		}
 		return nil, callbackView
 	case strings.HasPrefix(callbackData, "chat_gpt"):
-		_, ok := b.read(update.CallbackQuery.Message.Chat.ID)
-		if !ok {
+		if b.stateStore[update.CallbackQuery.Message.Chat.ID] == nil {
 			b.stateStore[update.CallbackQuery.Message.Chat.ID] = make(map[string][]string)
-			b.stateStore[update.CallbackQuery.Message.Chat.ID]["chat_gpt"] = []string{}
 		}
+		b.stateStore[update.CallbackQuery.Message.Chat.ID]["chat_gpt"] = []string{}
+
 		callbackView, ok := b.callbackView["chat_gpt"]
 		if !ok {
 			return errors.New("not found in map"), nil
 		}
 		return nil, callbackView
 	case strings.HasPrefix(callbackData, "feedback"):
-		_, ok := b.read(update.CallbackQuery.Message.Chat.ID)
-		if !ok {
+		if b.stateStore[update.CallbackQuery.Message.Chat.ID] == nil {
 			b.stateStore[update.CallbackQuery.Message.Chat.ID] = make(map[string][]string)
-			b.stateStore[update.CallbackQuery.Message.Chat.ID]["feedback"] = []string{}
 		}
+		b.stateStore[update.CallbackQuery.Message.Chat.ID]["feedback"] = []string{}
 		callbackView, ok := b.callbackView["feedback"]
 		if !ok {
 			return errors.New("not found in map"), nil
 		}
 		return nil, callbackView
 	case strings.HasPrefix(callbackData, "request"):
-		_, ok := b.read(update.CallbackQuery.Message.Chat.ID)
-		if !ok {
+		if b.stateStore[update.CallbackQuery.Message.Chat.ID] == nil {
 			b.stateStore[update.CallbackQuery.Message.Chat.ID] = make(map[string][]string)
-			b.stateStore[update.CallbackQuery.Message.Chat.ID]["request"] = []string{}
 		}
+		b.stateStore[update.CallbackQuery.Message.Chat.ID]["request"] = []string{}
+
 		callbackView, ok := b.callbackView["request"]
 		if !ok {
 			return errors.New("not found in map"), nil
