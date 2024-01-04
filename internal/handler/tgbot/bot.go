@@ -153,8 +153,6 @@ func (b *Bot) Run(ctx context.Context) error {
 		case update := <-updates:
 			updateCtx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 
-			b.log.Info("", b.stateStore)
-
 			b.handlerUpdate(updateCtx, &update)
 
 			cancel()

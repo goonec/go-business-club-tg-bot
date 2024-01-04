@@ -110,13 +110,16 @@ func (c *callbackService) CallbackShowServiceInfo() tgbot.ViewFunc {
 		msg := tgbotapi.NewPhoto(update.CallbackQuery.Message.Chat.ID, photoMedia.Media)
 		msg.Caption = builder.String()
 
-		serviceDescribeMarkup := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tg.FeedbackButton))
+		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tg.FeedbackButton),
+			tgbotapi.NewInlineKeyboardRow(tg.MainMenuButton))
 
-		msg.ReplyMarkup = &serviceDescribeMarkup
-
-		if _, err := bot.Send(msg); err != nil {
+		sendMsg, err := bot.Send(msg)
+		if err != nil {
 			return err
 		}
+		c.store.Delete(update.CallbackQuery.Message.Chat.ID)
+		c.store.Set([]interface{}{sendMsg.MessageID}, update.CallbackQuery.Message.Chat.ID)
+
 		return nil
 	}
 }
@@ -183,7 +186,7 @@ func (c *callbackService) CallbackShowPPTX() tgbot.ViewFunc {
 			BaseFile: tgbotapi.BaseFile{
 				BaseChat: tgbotapi.BaseChat{
 					ChatID:      update.CallbackQuery.Message.Chat.ID,
-					ReplyMarkup: &tg.MainMenuButton,
+					ReplyMarkup: tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tg.MainMenuButton)),
 				},
 				File: fileID,
 			},
@@ -197,10 +200,13 @@ func (c *callbackService) CallbackShowPPTX() tgbot.ViewFunc {
 				"◦ 2.000+ бизнес-запросов получили и помогли их решить\n" +
 				"Подробнее в презентации Ассоциации.")
 
-		if _, err := bot.Send(msg); err != nil {
+		sendMsg, err := bot.Send(msg)
+		if err != nil {
 			c.log.Error("failed to send message: %v", err)
 			return err
 		}
+		c.store.Delete(update.CallbackQuery.Message.Chat.ID)
+		c.store.Set([]interface{}{sendMsg.MessageID}, update.CallbackQuery.Message.Chat.ID)
 
 		return nil
 	}

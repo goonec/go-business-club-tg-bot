@@ -2,6 +2,7 @@ package callback
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/goonec/business-tg-bot/internal/boterror"
@@ -12,6 +13,7 @@ import (
 	"github.com/goonec/business-tg-bot/pkg/localstore"
 	"github.com/goonec/business-tg-bot/pkg/logger"
 	"github.com/goonec/business-tg-bot/pkg/tg"
+	"strings"
 )
 
 type callbackResident struct {
@@ -115,6 +117,30 @@ func (c *callbackResident) CallbackShowAllResident() tgbot.ViewFunc {
 	}
 }
 
+func (c *callbackResident) sendNewMsg(update *tgbotapi.Update, bot *tgbotapi.BotAPI) error {
+	msg := tgbotapi.NewMessage(update.FromChat().ID, "<b>Выберите нужную команду</b> ⏩")
+	msg.ParseMode = tgbotapi.ModeHTML
+	msg.ReplyMarkup = &tg.StartMenu
+
+	data, exist := c.store.Read(update.FromChat().ID)
+	if !exist {
+		return errors.New("local store is empty")
+	}
+
+	if _, err := bot.Request(tgbotapi.NewDeleteMessage(update.FromChat().ID, data[0].(int))); err != nil {
+		c.store.Delete(update.FromChat().ID)
+		return err
+	}
+	c.store.Delete(update.FromChat().ID)
+
+	if _, err := bot.Send(msg); err != nil {
+		c.store.Delete(update.FromChat().ID)
+		return err
+	}
+
+	return nil
+}
+
 func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
 		msg := tgbotapi.NewEditMessageText(update.FromChat().ID, update.CallbackQuery.Message.MessageID, "<b>Выберите нужную команду</b> ⏩")
@@ -122,6 +148,16 @@ func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 		msg.ParseMode = tgbotapi.ModeHTML
 		msg.ReplyMarkup = &tg.StartMenu
 		if _, err := bot.Send(msg); err != nil {
+			if strings.Contains(err.Error(), "Bad Request: there is no text in the message to edit") {
+				err := c.sendNewMsg(update, bot)
+				if err != nil {
+					c.log.Error("failed to send message: %v", err)
+					handler.HandleError(bot, update, boterror.ParseErrToText(err))
+					return nil
+				}
+
+				return nil
+			}
 			c.log.Error("failed to send message: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
 			return nil
@@ -186,6 +222,7 @@ func (c *callbackResident) CallbackShowInstruction() tgbot.ViewFunc {
 
 		msg := tgbotapi.NewMessage(update.FromChat().ID, text)
 		msg.ParseMode = tgbotapi.ModeHTML
+		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(tg.MainMenuButton))
 
 		_, err := bot.Send(msg)
 		if err != nil {

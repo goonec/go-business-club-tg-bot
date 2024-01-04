@@ -70,7 +70,7 @@ func Run(log *logger.Logger, cfg *config.Config) error {
 
 	residentCallback := callback.NewCallbackResident(residentUsecase, log, store)
 	businessClusterCallback := callback.NewCallbackBusinessCluster(businessClusterUsecase, residentUsecase, log, store)
-	scheduleCallback := callback.NewCallbackSchedule(scheduleUsecase, log)
+	scheduleCallback := callback.NewCallbackSchedule(scheduleUsecase, store, log)
 	serviceCallback := callback.NewCallbackService(serviceUsecase, pptxUsecase, store, log)
 	feedbackCallback := callback.NewCallbackFeedback(feedbackUsecase, transportChFeedback, log)
 
