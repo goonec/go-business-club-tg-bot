@@ -9,7 +9,7 @@ var (
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Список кластеров 🏆", "allcluster")),
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Показать раписание 🗓", "schedule")),
+			tgbotapi.NewInlineKeyboardButtonData("Показать раcписание 🗓", "schedule")),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("Список резидентов 💼", "resident")),
 		tgbotapi.NewInlineKeyboardRow(
