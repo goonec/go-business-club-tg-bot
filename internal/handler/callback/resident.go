@@ -169,7 +169,7 @@ func (c *callbackResident) CallbackStartButton() tgbot.ViewFunc {
 
 func (c *callbackResident) CallbackStartChatGPT() tgbot.ViewFunc {
 	return func(ctx context.Context, bot *tgbotapi.BotAPI, update *tgbotapi.Update) error {
-		msg := tgbotapi.NewMessage(update.FromChat().ID, "💬 Нейросеть Avanti ответит на все ваши вопросы! Для начала работы напишите любой запрос...\n\n👌Если вы хотите остановить чат и воспользоваться другими командами используейте - /stop_chat_gpt")
+		msg := tgbotapi.NewMessage(update.FromChat().ID, "💬 Нейросеть Avanti ответит на все ваши вопросы! Для начала работы напишите любой запрос...\n\n👌Если вы хотите остановить чат и воспользоваться другими командами используйте - /stop_chat_gpt")
 		if _, err := bot.Send(msg); err != nil {
 			c.log.Error("failed to send message: %v", err)
 			handler.HandleError(bot, update, boterror.ParseErrToText(err))
