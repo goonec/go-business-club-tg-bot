@@ -203,7 +203,14 @@ func (b *Bot) handlerUpdate(ctx context.Context, update *tgbotapi.Update) {
 					b.log.Error("failed to send message from ChatGPT %v", err)
 				}
 				end := time.Since(start)
-				sentMsg.Chat.MessageAutoDeleteTime = int(end.Seconds())
+
+				time.AfterFunc(end, func() {
+					_, err := b.api.Request(tgbotapi.NewDeleteMessage(update.Message.Chat.ID, sentMsg.MessageID))
+					if err != nil {
+						b.log.Error("failed delete chat gpt message %v", err)
+					}
+				})
+
 				b.log.Info("[%s] Время ответа: %f", update.Message.From.UserName, end.Seconds())
 			}()
 			return
