@@ -122,6 +122,7 @@ func (b *Bot) userMessageWithState(update *tgbotapi.Update) bool {
 		fb := []interface{}{update.Message.Text, *update, "услуги"}
 		b.transportChFeedback <- map[int64][]interface{}{update.Message.Chat.ID: fb}
 		b.delete(update.Message.Chat.ID)
+		b.cancelChatGptDialog(update.Message.Chat.ID)
 		return false
 	}
 
@@ -130,6 +131,7 @@ func (b *Bot) userMessageWithState(update *tgbotapi.Update) bool {
 		fb := []interface{}{update.Message.Text, *update, "заявка на вступление"}
 		b.transportChFeedback <- map[int64][]interface{}{update.Message.Chat.ID: fb}
 		b.delete(update.Message.Chat.ID)
+		b.cancelChatGptDialog(update.Message.Chat.ID)
 		return false
 	}
 
